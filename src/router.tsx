@@ -17,27 +17,27 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: `${ROUTES.BOOK_DETAIL.substring(1)}/:id`,
+        path: `${ROUTES.BOOK_DETAIL}/:id`,
         element: <BookDetailPage />,
       },
       {
-        path: `${ROUTES.CATEGORY.substring(1)}/:categoryId`,
+        path: `${ROUTES.CATEGORY}/:categoryId`,
         element: <CategoryPage />,
       },
       {
-        path: ROUTES.CART.substring(1),
+        path: ROUTES.CART,
         element: <CartPage />,
       },
       {
-        path: ROUTES.FLASH_SALE.substring(1),
+        path: ROUTES.FLASH_SALE,
         element: <CategoryPage />,
       },
       {
-        path: ROUTES.NEW_BOOKS.substring(1),
+        path: ROUTES.NEW_BOOKS,
         element: <CategoryPage />,
       },
       {
-        path: ROUTES.BEST_SELLERS.substring(1),
+        path: ROUTES.BEST_SELLERS,
         element: <CategoryPage />,
       },
     ],
