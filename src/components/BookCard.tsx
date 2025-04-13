@@ -1,17 +1,15 @@
 import { Link } from "react-router-dom";
-import { Heart, ShoppingCart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import { getBookDetailUrl } from "@/constants";
 
+import BookPlaceholder from "@/assets/images/books.avif";
 interface BookCardProps {
-  id: string;
+  id: number;
   title: string;
-  author: string;
-  coverImage: string;
+  coverImage?: string;
   price: number;
   originalPrice: number;
-  discount: number;
-  isNew?: boolean;
+  author?: string;
 }
 
 const BookCard = ({
@@ -21,35 +19,32 @@ const BookCard = ({
   coverImage,
   price,
   originalPrice,
-  discount,
-  isNew,
 }: BookCardProps) => {
   return (
     <Link
       to={getBookDetailUrl(id)}
-      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col h-full"
+      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col h-full relative"
     >
       {/* Discount badge */}
-      {discount > 0 && (
-        <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">
-          -{discount}%
-        </div>
-      )}
-
-      {/* New badge */}
-      {isNew && (
-        <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-br-lg">
-          Mới
-        </div>
-      )}
+      <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg z-10">
+        -{(((originalPrice - price) / originalPrice) * 100).toFixed(0)}%
+      </div>
 
       {/* Book cover */}
       <div className="relative pt-[150%]">
-        <img
-          src={coverImage}
-          alt={title}
-          className="absolute top-0 left-0 w-full h-full object-cover"
-        />
+        {coverImage ? (
+          <img
+            src={coverImage}
+            alt={title}
+            className="absolute top-0 left-0 w-full h-full object-cover"
+          />
+        ) : (
+          <img
+            src={BookPlaceholder}
+            alt={title}
+            className="absolute top-0 left-0 w-full h-full object-cover "
+          />
+        )}
       </div>
 
       {/* Book info */}
@@ -60,11 +55,10 @@ const BookCard = ({
           <div className="font-bold text-red-600">
             {price.toLocaleString()}đ
           </div>
-          {discount > 0 && (
-            <div className="text-gray-500 text-xs line-through">
-              {originalPrice.toLocaleString()}đ
-            </div>
-          )}
+
+          <div className="text-gray-500 text-xs line-through">
+            {originalPrice.toLocaleString()}đ
+          </div>
         </div>
       </div>
     </Link>

@@ -26,8 +26,8 @@ export const CATEGORIES = {
 };
 
 // Helper function to create book detail URL
-export const getBookDetailUrl = (id: string) => `${ROUTES.BOOK_DETAIL}/${id}`;
+export const getBookDetailUrl = (id: number) => `${ROUTES.BOOK_DETAIL}/${id}`;
 
 // Helper function to create category URL
-export const getCategoryUrl = (categoryId: string) =>
+export const getCategoryUrl = (categoryId: number) =>
   `${ROUTES.CATEGORY}/${categoryId}`;

@@ -1,136 +1,41 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Carousel from "@/components/Carousel";
 import BookCard from "@/components/BookCard";
-import {
-  banners,
-  categories,
-  newBooks,
-  discountBooks,
-  bestSellerBooks,
-} from "@/lib/data";
-import { ROUTES, getCategoryUrl } from "@/constants";
+import { banners } from "@/lib/data";
+import { fetchFlashSaleProducts } from "@/lib/api";
+import { ROUTES } from "@/constants";
+import { Product } from "@/types";
 
 const HomePage = () => {
+  const [flashSaleProducts, setFlashSaleProducts] = useState<Product[]>([]);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [flashSaleData] = await Promise.all([fetchFlashSaleProducts()]);
+        setFlashSaleProducts(flashSaleData || []);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+  console.log(flashSaleProducts);
   return (
     <div className="bg-gray-50">
       {/* Hero Banner Carousel */}
-      <section className="container mx-auto py-6">
+      <section className="container mx-auto py-4">
         <Carousel banners={banners} />
       </section>
-
-      {/* Categories */}
-      <section className="container mx-auto py-8">
-        <h2 className="text-2xl font-bold mb-6">Danh Mục Sản Phẩm</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              to={getCategoryUrl(category.id)}
-              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col items-center justify-center text-center"
-            >
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
-                <span className="text-red-500 font-bold">
-                  {category.name.charAt(0)}
-                </span>
-              </div>
-              <span className="text-sm font-medium">{category.name}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Flash Sale */}
-      <section className="bg-red-50 py-8">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold flex items-center">
-              <span className="text-red-500 mr-2">FLASH SALE</span>
-            </h2>
-            <Link
-              to={ROUTES.FLASH_SALE}
-              className="text-red-500 font-medium hover:underline"
-            >
-              Xem tất cả
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {discountBooks.slice(0, 5).map((book) => (
-              <BookCard
-                key={book.id}
-                id={book.id}
-                title={book.title}
-                author={book.author}
-                coverImage={book.coverImage}
-                price={book.price}
-                originalPrice={book.originalPrice}
-                discount={book.discount}
-                isNew={book.isNew}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* New Books */}
-      <section className="container mx-auto py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Sách Mới</h2>
-          <Link
-            to={ROUTES.NEW_BOOKS}
-            className="text-red-500 font-medium hover:underline"
-          >
-            Xem tất cả
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {newBooks.map((book) => (
-            <BookCard
-              key={book.id}
-              id={book.id}
-              title={book.title}
-              author={book.author}
-              coverImage={book.coverImage}
-              price={book.price}
-              originalPrice={book.originalPrice}
-              discount={book.discount}
-              isNew={book.isNew}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Best Sellers */}
-      <section className="bg-gray-100 py-8">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Sách Bán Chạy</h2>
-            <Link
-              to={ROUTES.BEST_SELLERS}
-              className="text-red-500 font-medium hover:underline"
-            >
-              Xem tất cả
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {bestSellerBooks.map((book) => (
-              <BookCard
-                key={book.id}
-                id={book.id}
-                title={book.title}
-                author={book.author}
-                coverImage={book.coverImage}
-                price={book.price}
-                originalPrice={book.originalPrice}
-                discount={book.discount}
-                isNew={book.isNew}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
-      <section className="container mx-auto py-10">
+      <section className="container mx-auto py-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-sm flex items-center">
             <div className="bg-blue-100 rounded-full p-3 mr-4">
@@ -219,6 +124,40 @@ const HomePage = () => {
               <h3 className="font-bold mb-1">Hỗ Trợ 24/7</h3>
               <p className="text-gray-600 text-sm">Luôn sẵn sàng hỗ trợ</p>
             </div>
+          </div>
+        </div>
+      </section>
+      {/* Flash Sale */}
+      <section className="bg-red-50 py-8">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center">
+              <span className="text-red-500 mr-2">FLASH SALE</span>
+            </h2>
+            <Link
+              to={ROUTES.FLASH_SALE}
+              className="text-red-500 font-medium hover:underline"
+            >
+              Xem tất cả
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {loading ? (
+              <p>Đang tải sản phẩm...</p>
+            ) : (
+              flashSaleProducts.map((book) => (
+                <BookCard
+                  key={book.id}
+                  id={book.id}
+                  title={book.name}
+                  author={book.author_name}
+                  // coverImage={book.image}
+                  price={book.sale_price || 0}
+                  originalPrice={book.price || 0}
+                  // discount={book.discount}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>
