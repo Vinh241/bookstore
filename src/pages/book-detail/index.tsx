@@ -1,33 +1,90 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Star, Truck, ShieldCheck, RotateCcw, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BookCard from "@/components/BookCard";
-import { books } from "@/lib/data";
-import { ROUTES, getCategoryUrl } from "@/constants";
+import { ROUTES } from "@/constants";
+import { fetchProductDetails, fetchRelatedProducts } from "@/lib/api";
+import { Product } from "@/types";
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
+  const [book, setBook] = useState<Product | null>(null);
+  const [relatedBooks, setRelatedBooks] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Find the current book
-  const book = books.find((b) => b.id === id);
+  useEffect(() => {
+    const loadProductData = async () => {
+      if (!id) return;
 
-  // Find related books from the same category
-  const relatedBooks = books
-    .filter((b) => b.category === book?.category && b.id !== id)
-    .slice(0, 5);
+      setIsLoading(true);
+      setError(null);
 
-  if (!book) {
+      try {
+        // Fetch product details
+        const productData = await fetchProductDetails(id);
+        console.log(productData);
+        setBook(productData);
+
+        if (productData && productData.category_id) {
+          // Fetch related products
+          const related = await fetchRelatedProducts(
+            productData.category_id,
+            id
+          );
+          setRelatedBooks(related);
+        }
+      } catch (err) {
+        setError("Không thể tải thông tin sách");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProductData();
+  }, [id]);
+
+  const incrementQuantity = () => setQuantity((q) => q + 1);
+  const decrementQuantity = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+
+  if (isLoading) {
     return (
       <div className="container mx-auto py-10 text-center">
-        Không tìm thấy sách
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
+          <div className="h-64 bg-gray-200 rounded mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+        </div>
       </div>
     );
   }
 
-  const incrementQuantity = () => setQuantity((q) => q + 1);
-  const decrementQuantity = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+  if (error || !book) {
+    return (
+      <div className="container mx-auto py-10 text-center">
+        <div className="text-red-500 mb-4">
+          {error || "Không tìm thấy sách"}
+        </div>
+        <Link
+          to={ROUTES.HOME}
+          className="inline-block bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Quay về trang chủ
+        </Link>
+      </div>
+    );
+  }
+
+  // Calculate discount percentage if sale_price exists
+  const discount = book.sale_price
+    ? Math.round(((book.price - book.sale_price) / book.price) * 100)
+    : 0;
+
+  // Use sale_price if available, otherwise use regular price
+  const finalPrice = book.sale_price || book.price;
 
   return (
     <div className="bg-gray-50 py-8">
@@ -40,14 +97,13 @@ const BookDetailPage = () => {
             </Link>
             <span className="mx-2">/</span>
             <Link
-              to={getCategoryUrl(book.category)}
+              to={`${ROUTES.CATEGORY}/${book.category_id}`}
               className="hover:text-red-500"
             >
-              {book.category.charAt(0).toUpperCase() +
-                book.category.slice(1).replace("-", " ")}
+              {book.category_name || "Danh mục"}
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-700">{book.title}</span>
+            <span className="text-gray-700">{book.name}</span>
           </div>
         </div>
 
@@ -57,15 +113,15 @@ const BookDetailPage = () => {
             {/* Product Image */}
             <div className="border rounded-lg overflow-hidden">
               <img
-                src={book.coverImage}
-                alt={book.title}
+                src={book.image_url || "/placeholder-book.jpg"}
+                alt={book.name}
                 className="w-full h-auto object-cover"
               />
             </div>
 
             {/* Product Details */}
             <div className="lg:col-span-2">
-              <h1 className="text-2xl font-bold mb-2">{book.title}</h1>
+              <h1 className="text-2xl font-bold mb-2">{book.name}</h1>
 
               <div className="flex items-center mb-4">
                 <div className="flex mr-4">
@@ -74,7 +130,7 @@ const BookDetailPage = () => {
                       key={i}
                       size={16}
                       className={
-                        i < Math.floor(book.reviews.rating)
+                        i < Math.floor(book.rating || 0)
                           ? "text-yellow-400 fill-yellow-400"
                           : "text-gray-300"
                       }
@@ -82,25 +138,27 @@ const BookDetailPage = () => {
                   ))}
                 </div>
                 <span className="text-sm text-blue-600">
-                  {book.reviews.count} đánh giá
+                  {book.review_count || 0} đánh giá
                 </span>
                 <span className="mx-2 text-gray-300">|</span>
-                <span className="text-sm text-green-600">Đã bán 200+</span>
+                <span className="text-sm text-green-600">
+                  Đã bán {book.quantity_sold || 0}+
+                </span>
               </div>
 
               {/* Price */}
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
                 <div className="flex items-center mb-2">
                   <span className="text-3xl font-bold text-red-600 mr-3">
-                    {book.price.toLocaleString()}đ
+                    {finalPrice.toLocaleString()}đ
                   </span>
-                  {book.discount > 0 && (
+                  {discount > 0 && (
                     <>
                       <span className="text-gray-500 line-through mr-2">
-                        {book.originalPrice.toLocaleString()}đ
+                        {book.price.toLocaleString()}đ
                       </span>
                       <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
-                        -{book.discount}%
+                        -{discount}%
                       </span>
                     </>
                   )}
@@ -110,19 +168,33 @@ const BookDetailPage = () => {
               {/* Book Info */}
               <div className="grid grid-cols-2 gap-y-2 mb-6">
                 <div className="text-gray-500">Tác giả:</div>
-                <div className="font-medium">{book.author}</div>
+                <div className="font-medium">
+                  {book.author_name || "Không có thông tin"}
+                </div>
 
                 <div className="text-gray-500">Nhà xuất bản:</div>
-                <div className="font-medium">{book.publisher}</div>
+                <div className="font-medium">
+                  {book.publisher_name || "Không có thông tin"}
+                </div>
 
                 <div className="text-gray-500">Ngày phát hành:</div>
-                <div className="font-medium">{book.publishDate}</div>
+                <div className="font-medium">
+                  {book.publication_date
+                    ? new Date(book.publication_date).toLocaleDateString(
+                        "vi-VN"
+                      )
+                    : "Không có thông tin"}
+                </div>
 
-                <div className="text-gray-500">Số trang:</div>
-                <div className="font-medium">{book.pages}</div>
+                <div className="text-gray-500">ISBN:</div>
+                <div className="font-medium">
+                  {book.isbn || "Không có thông tin"}
+                </div>
 
-                <div className="text-gray-500">Ngôn ngữ:</div>
-                <div className="font-medium">{book.language}</div>
+                <div className="text-gray-500">Tồn kho:</div>
+                <div className="font-medium">
+                  {book.stock_quantity} sản phẩm
+                </div>
               </div>
 
               {/* Quantity Selector */}
@@ -138,6 +210,7 @@ const BookDetailPage = () => {
                   <input
                     type="number"
                     min="1"
+                    max={book.stock_quantity}
                     value={quantity}
                     onChange={(e) =>
                       setQuantity(Math.max(1, parseInt(e.target.value) || 1))
@@ -193,29 +266,31 @@ const BookDetailPage = () => {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <h2 className="text-xl font-bold mb-4">Mô tả sản phẩm</h2>
           <div className="prose max-w-none">
-            <p className="mb-4">{book.description}</p>
+            <p className="mb-4">
+              {book.description || "Không có mô tả cho sản phẩm này."}
+            </p>
           </div>
         </div>
 
         {/* Related Products */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Sản phẩm liên quan</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {relatedBooks.map((relatedBook) => (
-              <BookCard
-                key={relatedBook.id}
-                id={relatedBook.id}
-                title={relatedBook.title}
-                author={relatedBook.author}
-                coverImage={relatedBook.coverImage}
-                price={relatedBook.price}
-                originalPrice={relatedBook.originalPrice}
-                discount={relatedBook.discount}
-                isNew={relatedBook.isNew}
-              />
-            ))}
+        {relatedBooks.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4">Sản phẩm liên quan</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {relatedBooks.map((relatedBook) => (
+                <BookCard
+                  key={relatedBook.id}
+                  id={relatedBook.id}
+                  title={relatedBook.name}
+                  author={relatedBook.author_name}
+                  coverImage={relatedBook.image_url}
+                  price={relatedBook.sale_price || relatedBook.price}
+                  originalPrice={relatedBook.price}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

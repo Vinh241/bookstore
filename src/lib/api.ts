@@ -22,3 +22,39 @@ export const fetchFlashSaleProducts = async (): Promise<Product[]> => {
     return [];
   }
 };
+
+export const fetchProductDetails = async (
+  id: string | number
+): Promise<Product | null> => {
+  try {
+    const response = await axiosInstance.get(`/products/${id}`);
+    return response?.data || null;
+  } catch (error) {
+    console.error(`Error fetching product with id ${id}:`, error);
+    throw error;
+  }
+};
+
+export const fetchRelatedProducts = async (
+  categoryId: number,
+  productId: number | string,
+  limit: number = 5
+): Promise<Product[]> => {
+  try {
+    const response = await axiosInstance.get(`/products`, {
+      params: {
+        category_id: categoryId,
+        limit: limit + 1, // Fetch one extra to filter out current product
+      },
+    });
+
+    // Filter out the current product
+    const products = response?.data?.data || [];
+    return products
+      .filter((product: Product) => product.id !== Number(productId))
+      .slice(0, limit);
+  } catch (error) {
+    console.error("Error fetching related products:", error);
+    return [];
+  }
+};

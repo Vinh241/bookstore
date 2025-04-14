@@ -63,6 +63,13 @@ export interface Product {
   created_at: Date;
   updated_at: Date;
   author_name?: string;
+
+  // Additional fields needed for UI
+  image_url?: string;
+  category_name?: string;
+  publisher_name?: string;
+  rating?: number;
+  review_count?: number;
 }
 
 export interface ProductImage {
