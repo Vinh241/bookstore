@@ -1,9 +1,50 @@
 import { Link } from "react-router-dom";
-import { Search, ShoppingCart, User, Menu, Heart, Phone } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  Menu,
+  Heart,
+  Phone,
+  ChevronDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants";
+import { useEffect, useState } from "react";
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parent_id: string | null;
+}
 
 const Navbar = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [showCategories, setShowCategories] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/categories");
+        const data = await response.json();
+
+        if (data.status === "success" && data.data.categories) {
+          // Sort by ID and get first 5
+          const sortedCategories = [...data.data.categories]
+            .sort((a, b) => Number(a.id) - Number(b.id))
+            .slice(0, 5);
+
+          setCategories(sortedCategories);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
     <div className="w-full bg-white">
       {/* Top banner - contact info */}
@@ -87,11 +128,31 @@ const Navbar = () => {
       <div className="bg-red-600 text-white">
         <div className="container mx-auto">
           <div className="flex items-center">
-            <div className="py-3 px-4 flex items-center gap-2 font-medium cursor-pointer hover:bg-red-700">
+            <div
+              className="py-3 px-4 flex items-center gap-2 font-medium cursor-pointer hover:bg-red-700 relative"
+              onMouseEnter={() => setShowCategories(true)}
+              onMouseLeave={() => setShowCategories(false)}
+            >
               <Menu size={20} />
               <span>Danh mục sản phẩm</span>
+              <ChevronDown size={16} />
+
+              {/* Categories dropdown */}
+              {showCategories && categories.length > 0 && (
+                <div className="absolute top-full left-0 bg-white text-gray-800 w-64 shadow-lg z-50">
+                  {categories.map((category) => (
+                    <Link
+                      key={category.id}
+                      to={`/category/${category.slug}`}
+                      className="block px-4 py-2 hover:bg-gray-100 border-b border-gray-200"
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex">
+            {/* <div className="flex">
               <Link
                 to={ROUTES.NEW_BOOKS}
                 className="py-3 px-4 hover:bg-red-700"
@@ -119,7 +180,7 @@ const Navbar = () => {
               <Link to={ROUTES.TOYS} className="py-3 px-4 hover:bg-red-700">
                 Đồ Chơi
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
