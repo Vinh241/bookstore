@@ -4,8 +4,12 @@ import { Star, Truck, ShieldCheck, RotateCcw, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BookCard from "@/components/BookCard";
 import { ROUTES } from "@/constants";
-import { fetchProductDetails, fetchRelatedProducts } from "@/lib/api";
-import { Product } from "@/types";
+import {
+  fetchProductDetails,
+  fetchRelatedProducts,
+  fetchProductReviews,
+} from "@/lib/api";
+import { Product, Review } from "@/types";
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +18,9 @@ const BookDetailPage = () => {
   const [relatedBooks, setRelatedBooks] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
     const loadProductData = async () => {
@@ -27,6 +34,12 @@ const BookDetailPage = () => {
         const productData = await fetchProductDetails(id);
         console.log(productData);
         setBook(productData);
+
+        // Fetch product reviews
+        const reviewsData = await fetchProductReviews(id);
+        setReviews(reviewsData.reviews || []);
+        setAverageRating(reviewsData.average_rating || 0);
+        setReviewCount(reviewsData.review_count || 0);
 
         if (productData && productData.category_id) {
           // Fetch related products
@@ -130,7 +143,7 @@ const BookDetailPage = () => {
                       key={i}
                       size={16}
                       className={
-                        i < Math.floor(book.rating || 0)
+                        i < Math.floor(averageRating)
                           ? "text-yellow-400 fill-yellow-400"
                           : "text-gray-300"
                       }
@@ -138,7 +151,7 @@ const BookDetailPage = () => {
                   ))}
                 </div>
                 <span className="text-sm text-blue-600">
-                  {book.review_count || 0} đánh giá
+                  {reviewCount} đánh giá
                 </span>
                 <span className="mx-2 text-gray-300">|</span>
                 <span className="text-sm text-green-600">
@@ -270,6 +283,77 @@ const BookDetailPage = () => {
               {book.description || "Không có mô tả cho sản phẩm này."}
             </p>
           </div>
+        </div>
+
+        {/* Customer Reviews */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4">Đánh giá từ khách hàng</h2>
+
+          <div className="flex items-center mb-6">
+            <div className="mr-4">
+              <span className="text-4xl font-bold">
+                {averageRating.toFixed(1)}
+              </span>
+              <span className="text-gray-500">/5</span>
+            </div>
+            <div>
+              <div className="flex mb-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={24}
+                    className={
+                      i < Math.floor(averageRating)
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-gray-300"
+                    }
+                  />
+                ))}
+              </div>
+              <div className="text-sm text-gray-500">
+                {reviewCount} đánh giá
+              </div>
+            </div>
+          </div>
+
+          {reviews.length > 0 ? (
+            <div className="space-y-6">
+              {reviews.map((review) => (
+                <div key={review.id} className="border-b pb-4">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                      {review.user_id}
+                    </div>
+                    <div>
+                      <div className="flex mb-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={16}
+                            className={
+                              i < review.rating
+                                ? "text-yellow-400 fill-yellow-400"
+                                : "text-gray-300"
+                            }
+                          />
+                        ))}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(review.created_at).toLocaleDateString(
+                          "vi-VN"
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-700">{review.comment || ""}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500 text-center py-8">
+              Chưa có đánh giá nào cho sản phẩm này
+            </div>
+          )}
         </div>
 
         {/* Related Products */}

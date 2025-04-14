@@ -58,3 +58,17 @@ export const fetchRelatedProducts = async (
     return [];
   }
 };
+
+export const fetchProductReviews = async (
+  productId: string | number
+): Promise<any> => {
+  try {
+    const response = await axiosInstance.get(`/products/${productId}/reviews`);
+    return (
+      response?.data || { reviews: [], average_rating: 0, review_count: 0 }
+    );
+  } catch (error) {
+    console.error(`Error fetching reviews for product ${productId}:`, error);
+    return { reviews: [], average_rating: 0, review_count: 0 };
+  }
+};
