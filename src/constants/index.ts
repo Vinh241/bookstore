@@ -16,6 +16,10 @@ export const ROUTES = {
   // Other categories
   SCHOOL_SUPPLIES: "/do-dung-hoc-tap",
   TOYS: "/do-choi",
+  // Information pages
+  ABOUT_US: "/ve-chung-toi",
+  POLICY: "/chinh-sach",
+  CONTACT: "/lien-he",
 };
 
 // Special Categories

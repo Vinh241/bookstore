@@ -152,35 +152,17 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-            {/* <div className="flex">
-              <Link
-                to={ROUTES.NEW_BOOKS}
-                className="py-3 px-4 hover:bg-red-700"
-              >
-                Sách Mới
+            <div className="flex">
+              <Link to={ROUTES.ABOUT_US} className="py-3 px-4 hover:bg-red-700">
+                Về chúng tôi
               </Link>
-              <Link
-                to={ROUTES.BEST_SELLERS}
-                className="py-3 px-4 hover:bg-red-700"
-              >
-                Sách Bán Chạy
+              <Link to={ROUTES.POLICY} className="py-3 px-4 hover:bg-red-700">
+                Chính sách
               </Link>
-              <Link
-                to={ROUTES.FLASH_SALE}
-                className="py-3 px-4 hover:bg-red-700"
-              >
-                Sách Giảm Giá
+              <Link to={ROUTES.CONTACT} className="py-3 px-4 hover:bg-red-700">
+                Liên hệ
               </Link>
-              <Link
-                to={ROUTES.SCHOOL_SUPPLIES}
-                className="py-3 px-4 hover:bg-red-700"
-              >
-                Đồ Dùng Học Tập
-              </Link>
-              <Link to={ROUTES.TOYS} className="py-3 px-4 hover:bg-red-700">
-                Đồ Chơi
-              </Link>
-            </div> */}
+            </div>
           </div>
         </div>
       </div>
