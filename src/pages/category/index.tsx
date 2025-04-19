@@ -7,7 +7,11 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { categories } from "@/lib/data";
 import { ROUTES, CATEGORIES } from "@/constants";
-import { fetchCategoryProducts, fetchPublishers } from "@/lib/api";
+import {
+  fetchCategoryProducts,
+  fetchPublishers,
+  fetchCategoryDetails,
+} from "@/lib/api";
 import { Product } from "@/types";
 
 const CategoryPage = () => {
@@ -33,6 +37,7 @@ const CategoryPage = () => {
   const [limit] = useState(12);
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [categoryName, setCategoryName] = useState("Tất cả sách");
 
   // Get the sorting option
   const getSortOption = () => {
@@ -127,16 +132,24 @@ const CategoryPage = () => {
   ]);
 
   // Get the category display name from the categoryId
-  const getCategoryName = () => {
-    if (!categoryId) return "Tất cả sách";
+  useEffect(() => {
+    const getCategoryName = async () => {
+      try {
+        if (categoryId) {
+          const category = await fetchCategoryDetails(categoryId);
+          console.log("cata", category);
+          setCategoryName(
+            (category as any)?.category?.name || "Danh mục không tồn tại"
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching category details:", error);
+        setCategoryName("Danh mục không tồn tại");
+      }
+    };
 
-    if (categoryId === CATEGORIES.FLASH_SALE) return "Flash Sale";
-    if (categoryId === CATEGORIES.NEW_BOOKS) return "Sách mới";
-    if (categoryId === CATEGORIES.BEST_SELLERS) return "Sách bán chạy";
-
-    const category = categories.find((c) => c.id.toString() === categoryId);
-    return category ? category.name : "Danh mục không tồn tại";
-  };
+    getCategoryName();
+  }, [categoryId]);
 
   // Toggle publisher selection
   const togglePublisher = (publisherId: number) => {
@@ -175,7 +188,7 @@ const CategoryPage = () => {
               Trang chủ
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-700">{getCategoryName()}</span>
+            <span className="text-gray-700">{categoryName}</span>
           </div>
         </div>
 
@@ -268,9 +281,7 @@ const CategoryPage = () => {
             <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
               <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                 <div>
-                  <h1 className="text-xl font-bold mb-1">
-                    {getCategoryName()}
-                  </h1>
+                  <h1 className="text-xl font-bold mb-1">{categoryName}</h1>
                   <p className="text-gray-500 text-sm">
                     {totalProducts} sản phẩm
                   </p>

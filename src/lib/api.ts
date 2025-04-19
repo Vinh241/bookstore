@@ -56,7 +56,7 @@ export const fetchCategoryProducts = async (
     const response = await axiosInstance.get(`/products`, {
       params,
     });
-    console.log("response");
+
     // Return a properly structured response similar to what the detail page expects
     return {
       products: response?.data?.data || [],
@@ -76,5 +76,17 @@ export const fetchPublishers = async (): Promise<any[]> => {
   } catch (error) {
     console.error("Error fetching publishers:", error);
     return [];
+  }
+};
+
+export const fetchCategoryDetails = async (
+  id: string | number
+): Promise<Category | null> => {
+  try {
+    const response = await axiosInstance.get(`/categories/${id}`);
+    return response?.data?.data || null;
+  } catch (error) {
+    console.error(`Error fetching category with id ${id}:`, error);
+    return null;
   }
 };

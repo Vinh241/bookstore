@@ -44,7 +44,6 @@ const Navbar = () => {
 
     fetchCategories();
   }, []);
-  console.log("cate", categories);
   return (
     <div className="w-full bg-white">
       {/* Top banner - contact info */}

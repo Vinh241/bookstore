@@ -28,7 +28,6 @@ const BookDetailPage = () => {
       try {
         // Fetch product details
         const productData = await fetchProductDetails(id);
-        console.log(productData);
         setBook(productData);
 
         // Fetch product reviews
