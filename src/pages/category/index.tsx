@@ -1,99 +1,168 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import BookCard from "@/components/BookCard";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { books, categories } from "@/lib/data";
+import { categories } from "@/lib/data";
 import { ROUTES, CATEGORIES } from "@/constants";
-
-const sortOptions = [
-  { value: "popular", label: "Phổ biến nhất" },
-  { value: "newest", label: "Mới nhất" },
-  { value: "priceAsc", label: "Giá: Thấp đến cao" },
-  { value: "priceDesc", label: "Giá: Cao đến thấp" },
-  { value: "discountDesc", label: "Giảm giá nhiều nhất" },
-];
+import { fetchCategoryProducts, fetchPublishers } from "@/lib/api";
+import { Product } from "@/types";
 
 const CategoryPage = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
-  const [sortBy, setSortBy] = useState("popular");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // State for filters
+  const [sortBy, setSortBy] = useState("quantity_sold");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [priceRange, setPriceRange] = useState([0, 500000]);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedPublishers, setSelectedPublishers] = useState<string[]>([]);
+  const [selectedPublishers, setSelectedPublishers] = useState<number[]>([]);
+
+  // Products state
+  const [books, setBooks] = useState<Product[]>([]);
+  const [publishers, setPublishers] = useState<{ id: number; name: string }[]>(
+    []
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(parseInt(searchParams.get("page") || "1"));
+  const [limit] = useState(12);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // Get the sorting option
+  const getSortOption = () => {
+    if (sortBy === "price") {
+      return sortOrder === "asc" ? "price-asc" : "price-desc";
+    }
+    if (sortBy === "created_at") return "newest";
+    if (sortBy === "quantity_sold") return "bestselling";
+    return "popular";
+  };
+
+  // Set the sort option
+  const handleSortChange = (option: string) => {
+    switch (option) {
+      case "price-asc":
+        setSortBy("price");
+        setSortOrder("asc");
+        break;
+      case "price-desc":
+        setSortBy("price");
+        setSortOrder("desc");
+        break;
+      case "newest":
+        setSortBy("created_at");
+        setSortOrder("desc");
+        break;
+      case "bestselling":
+        setSortBy("quantity_sold");
+        setSortOrder("desc");
+        break;
+      default:
+        setSortBy("quantity_sold");
+        setSortOrder("desc");
+        break;
+    }
+  };
+
+  // Load publishers and set initial selected publishers
+  useEffect(() => {
+    const loadPublishers = async () => {
+      try {
+        const publishersData = await fetchPublishers();
+        setPublishers(publishersData);
+        // Select all publishers initially
+        setSelectedPublishers(publishersData.map((p) => p.id));
+      } catch (err) {
+        console.error("Error loading publishers:", err);
+      }
+    };
+
+    loadPublishers();
+  }, []);
+
+  // Fetch products based on filters
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const params = {
+          page,
+          limit,
+          sortBy,
+          sortOrder,
+          categoryId: categoryId ? parseInt(categoryId) : undefined,
+          publisherIds:
+            selectedPublishers.length > 0 ? selectedPublishers : undefined,
+          minPrice: priceRange[0],
+          maxPrice: priceRange[1],
+        };
+
+        const result = await fetchCategoryProducts(params);
+        setBooks(result.products || []);
+        setTotalProducts(result.total || 0);
+        setTotalPages(result.totalPages || 0);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError("Không thể tải danh sách sản phẩm");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [
+    categoryId,
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    priceRange,
+    selectedPublishers,
+  ]);
 
   // Get the category display name from the categoryId
   const getCategoryName = () => {
     if (!categoryId) return "Tất cả sách";
-    const category = categories.find((c) => c.id === categoryId);
+
+    if (categoryId === CATEGORIES.FLASH_SALE) return "Flash Sale";
+    if (categoryId === CATEGORIES.NEW_BOOKS) return "Sách mới";
+    if (categoryId === CATEGORIES.BEST_SELLERS) return "Sách bán chạy";
+
+    const category = categories.find((c) => c.id.toString() === categoryId);
     return category ? category.name : "Danh mục không tồn tại";
   };
 
-  // Get the books for the current category
-  const getCategoryBooks = () => {
-    let filteredBooks = books;
-
-    // Filter by category if specified
-    if (categoryId && categoryId !== "all") {
-      // Special categories
-      if (categoryId === CATEGORIES.FLASH_SALE) {
-        filteredBooks = books.filter((book) => book.discount >= 20);
-      } else if (categoryId === CATEGORIES.NEW_BOOKS) {
-        filteredBooks = books.filter((book) => book.isNew);
-      } else if (categoryId === CATEGORIES.BEST_SELLERS) {
-        filteredBooks = books
-          .sort((a, b) => b.reviews.count - a.reviews.count)
-          .slice(0, 20);
-      } else {
-        filteredBooks = books.filter((book) => book.category === categoryId);
-      }
-    }
-
-    // Apply price filter
-    filteredBooks = filteredBooks.filter(
-      (book) => book.price >= priceRange[0] && book.price <= priceRange[1]
+  // Toggle publisher selection
+  const togglePublisher = (publisherId: number) => {
+    setSelectedPublishers((prev) =>
+      prev.includes(publisherId)
+        ? prev.filter((p) => p !== publisherId)
+        : [...prev, publisherId]
     );
-
-    // Apply publisher filter
-    if (selectedPublishers.length > 0) {
-      filteredBooks = filteredBooks.filter((book) =>
-        selectedPublishers.includes(book.publisher)
-      );
-    }
-
-    // Apply sorting
-    if (sortBy === "newest") {
-      return [...filteredBooks].sort(
-        (a, b) =>
-          new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
-      );
-    } else if (sortBy === "priceAsc") {
-      return [...filteredBooks].sort((a, b) => a.price - b.price);
-    } else if (sortBy === "priceDesc") {
-      return [...filteredBooks].sort((a, b) => b.price - a.price);
-    } else if (sortBy === "discountDesc") {
-      return [...filteredBooks].sort((a, b) => b.discount - a.discount);
-    }
-
-    // Default sort by popularity
-    return [...filteredBooks].sort((a, b) => b.reviews.count - a.reviews.count);
   };
 
-  const categoryBooks = getCategoryBooks();
+  // Reset filters
+  const resetFilters = () => {
+    setPriceRange([0, 500000]);
+    setSelectedPublishers([]);
+    setSortBy("quantity_sold");
+    setSortOrder("desc");
+    setPage(1);
+  };
 
-  // Get unique publishers from the filtered books
-  const publishers = Array.from(
-    new Set(books.map((book) => book.publisher))
-  ).sort();
+  // Handle pagination
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
 
-  // Toggle publisher selection
-  const togglePublisher = (publisher: string) => {
-    setSelectedPublishers((prev) =>
-      prev.includes(publisher)
-        ? prev.filter((p) => p !== publisher)
-        : [...prev, publisher]
-    );
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
   };
 
   return (
@@ -161,29 +230,35 @@ const CategoryPage = () => {
             {/* Publishers */}
             <div className="mb-6">
               <h3 className="font-semibold mb-3">Nhà xuất bản</h3>
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                {publishers.map((publisher) => (
-                  <div key={publisher} className="flex items-center">
-                    <Checkbox
-                      id={`publisher-${publisher}`}
-                      checked={selectedPublishers.includes(publisher)}
-                      onCheckedChange={() => togglePublisher(publisher)}
-                      className="mr-2"
-                    />
-                    <label
-                      htmlFor={`publisher-${publisher}`}
-                      className="text-sm cursor-pointer"
-                    >
-                      {publisher}
-                    </label>
-                  </div>
-                ))}
-              </div>
+              {publishers.length > 0 ? (
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                  {publishers.map((publisher) => (
+                    <div key={publisher.id} className="flex items-center">
+                      <Checkbox
+                        id={`publisher-${publisher.id}`}
+                        checked={selectedPublishers.includes(publisher.id)}
+                        onCheckedChange={() => togglePublisher(publisher.id)}
+                        className="mr-2"
+                      />
+                      <label
+                        htmlFor={`publisher-${publisher.id}`}
+                        className="text-sm cursor-pointer"
+                      >
+                        {publisher.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Đang tải...</p>
+              )}
             </div>
 
             {/* Apply Filters (Mobile) */}
             <div className="md:hidden">
-              <Button className="w-full">Áp dụng</Button>
+              <Button className="w-full" onClick={() => setFilterOpen(false)}>
+                Áp dụng
+              </Button>
             </div>
           </div>
 
@@ -191,67 +266,106 @@ const CategoryPage = () => {
           <div className="md:col-span-3">
             {/* Category Header */}
             <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-              <h1 className="text-xl font-bold mb-1">{getCategoryName()}</h1>
-              <p className="text-gray-500 text-sm mb-4">
-                {categoryBooks.length} sản phẩm
-              </p>
-
-              {/* Sort Options */}
-              <div className="flex flex-wrap items-center border-t pt-4">
-                <span className="text-gray-500 mr-3">Sắp xếp theo:</span>
-                <div className="flex flex-wrap gap-2">
-                  {sortOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      className={`px-3 py-1 text-sm rounded-full ${
-                        sortBy === option.value
-                          ? "bg-red-500 text-white"
-                          : "bg-gray-100 hover:bg-gray-200"
-                      }`}
-                      onClick={() => setSortBy(option.value)}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                <div>
+                  <h1 className="text-xl font-bold mb-1">
+                    {getCategoryName()}
+                  </h1>
+                  <p className="text-gray-500 text-sm">
+                    {totalProducts} sản phẩm
+                  </p>
+                </div>
+                <div className="mt-4 md:mt-0">
+                  <select
+                    className="border rounded-md px-3 py-2 text-sm"
+                    value={getSortOption()}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                  >
+                    <option value="bestselling">Bán chạy nhất</option>
+                    <option value="price-asc">Giá: Thấp đến cao</option>
+                    <option value="price-desc">Giá: Cao đến thấp</option>
+                    <option value="newest">Mới nhất</option>
+                  </select>
                 </div>
               </div>
             </div>
 
-            {/* Products */}
-            {categoryBooks.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {categoryBooks.map((book) => (
-                  <BookCard
-                    key={book.id}
-                    id={book.id}
-                    title={book.title}
-                    author={book.author}
-                    coverImage={book.coverImage}
-                    price={book.price}
-                    originalPrice={book.originalPrice}
-                    discount={book.discount}
-                    isNew={book.isNew}
-                  />
-                ))}
-              </div>
-            ) : (
+            {/* Loading state */}
+            {loading && (
               <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-                <h2 className="text-xl font-medium mb-2">
-                  Không tìm thấy sản phẩm
+                <p className="text-gray-500">Đang tải sản phẩm...</p>
+              </div>
+            )}
+
+            {/* Error state */}
+            {error && !loading && (
+              <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+                <h2 className="text-xl font-medium mb-2 text-red-500">
+                  Có lỗi xảy ra
                 </h2>
-                <p className="text-gray-500 mb-4">
-                  Vui lòng thử lại với bộ lọc khác
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setPriceRange([0, 500000]);
-                    setSelectedPublishers([]);
-                  }}
-                >
-                  Xóa bộ lọc
+                <p className="text-gray-500 mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()}>
+                  Thử lại
                 </Button>
               </div>
+            )}
+
+            {/* Products */}
+            {!loading && !error && (
+              <>
+                {books.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {books.map((book) => (
+                        <BookCard
+                          key={book.id}
+                          id={book.id}
+                          title={book.name}
+                          author={book.author_name || ""}
+                          coverImage={book.image_url || ""}
+                          price={book.sale_price || book.price}
+                          originalPrice={book.price}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-center items-center mt-8 space-x-2">
+                        <Button
+                          variant="outline"
+                          onClick={handlePreviousPage}
+                          disabled={page === 1}
+                        >
+                          Trang trước
+                        </Button>
+                        <span className="text-sm">
+                          Trang {page} / {totalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          onClick={handleNextPage}
+                          disabled={page === totalPages}
+                        >
+                          Trang tiếp
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+                    <h2 className="text-xl font-medium mb-2">
+                      Không tìm thấy sản phẩm
+                    </h2>
+                    <p className="text-gray-500 mb-4">
+                      Vui lòng thử lại với bộ lọc khác
+                    </p>
+                    <Button variant="outline" onClick={resetFilters}>
+                      Xóa bộ lọc
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

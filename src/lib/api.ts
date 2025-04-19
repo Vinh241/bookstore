@@ -35,30 +35,6 @@ export const fetchProductDetails = async (
   }
 };
 
-export const fetchRelatedProducts = async (
-  categoryId: number,
-  productId: number | string,
-  limit: number = 5
-): Promise<Product[]> => {
-  try {
-    const response = await axiosInstance.get(`/products`, {
-      params: {
-        category_id: categoryId,
-        limit: limit + 1, // Fetch one extra to filter out current product
-      },
-    });
-
-    // Filter out the current product
-    const products = response?.data?.data || [];
-    return products
-      .filter((product: Product) => product.id !== Number(productId))
-      .slice(0, limit);
-  } catch (error) {
-    console.error("Error fetching related products:", error);
-    return [];
-  }
-};
-
 export const fetchProductReviews = async (
   productId: string | number
 ): Promise<any> => {
@@ -70,5 +46,35 @@ export const fetchProductReviews = async (
   } catch (error) {
     console.error(`Error fetching reviews for product ${productId}:`, error);
     return { reviews: [], average_rating: 0, review_count: 0 };
+  }
+};
+
+export const fetchCategoryProducts = async (
+  params: any
+): Promise<{ products: Product[]; total: number; totalPages: number }> => {
+  try {
+    const response = await axiosInstance.get(`/products`, {
+      params,
+    });
+    console.log("response");
+    // Return a properly structured response similar to what the detail page expects
+    return {
+      products: response?.data?.data || [],
+      total: response?.data?.total || 0,
+      totalPages: response?.data?.totalPages || 0,
+    };
+  } catch (error) {
+    console.error(`Error fetching products for category :`, error);
+    return { products: [], total: 0, totalPages: 0 };
+  }
+};
+
+export const fetchPublishers = async (): Promise<any[]> => {
+  try {
+    const response = await axiosInstance.get("/publishers");
+    return response?.data || [];
+  } catch (error) {
+    console.error("Error fetching publishers:", error);
+    return [];
   }
 };

@@ -4,11 +4,7 @@ import { Star, Truck, ShieldCheck, RotateCcw, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BookCard from "@/components/BookCard";
 import { ROUTES } from "@/constants";
-import {
-  fetchProductDetails,
-  fetchRelatedProducts,
-  fetchProductReviews,
-} from "@/lib/api";
+import { fetchProductDetails, fetchProductReviews } from "@/lib/api";
 import { Product, Review } from "@/types";
 
 const BookDetailPage = () => {
@@ -40,15 +36,6 @@ const BookDetailPage = () => {
         setReviews(reviewsData.reviews || []);
         setAverageRating(reviewsData.average_rating || 0);
         setReviewCount(reviewsData.review_count || 0);
-
-        if (productData && productData.category_id) {
-          // Fetch related products
-          const related = await fetchRelatedProducts(
-            productData.category_id,
-            id
-          );
-          setRelatedBooks(related);
-        }
       } catch (err) {
         setError("Không thể tải thông tin sách");
         console.error(err);
