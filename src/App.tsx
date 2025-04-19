@@ -1,7 +1,12 @@
-import { Navigate } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
+import { Toaster } from "sonner";
 
 function App() {
-  return <Navigate to="/" replace />;
+  return (
+    <BrowserRouter>
+      <Toaster />
+    </BrowserRouter>
+  );
 }
 
 export default App;

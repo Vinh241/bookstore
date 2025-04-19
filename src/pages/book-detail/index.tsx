@@ -49,6 +49,46 @@ const BookDetailPage = () => {
   const incrementQuantity = () => setQuantity((q) => q + 1);
   const decrementQuantity = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
+  const addToCart = () => {
+    if (!book) return;
+
+    try {
+      // Get existing cart items from localStorage
+      const existingCartItems = JSON.parse(
+        localStorage.getItem("cart") || "[]"
+      );
+
+      // Check if item already exists in cart
+      const existingItemIndex = existingCartItems.findIndex(
+        (item: any) => item.id === book.id
+      );
+
+      if (existingItemIndex >= 0) {
+        // Update quantity if item exists
+        existingCartItems[existingItemIndex].quantity += quantity;
+      } else {
+        // Add new item if it doesn't exist
+        existingCartItems.push({
+          id: book.id,
+          quantity: quantity,
+        });
+      }
+
+      // Save back to localStorage
+      localStorage.setItem("cart", JSON.stringify(existingCartItems));
+
+      // Show success message
+      toast.success("Thành công", {
+        description: "Đã thêm vào giỏ hàng",
+      });
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("Lỗi", {
+        description: "Có lỗi xảy ra khi thêm vào giỏ hàng",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-10 text-center">
