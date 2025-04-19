@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants";
 import { useEffect, useState } from "react";
+import { useCart } from "@/contexts/CartContext";
 
 interface Category {
   id: string;
@@ -22,6 +23,10 @@ interface Category {
 const Navbar = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [showCategories, setShowCategories] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isFixed, setIsFixed] = useState(false);
+
+  const { itemCount } = useCart();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -90,33 +95,32 @@ const Navbar = () => {
               </Button>
             </div>
 
-            {/* Navigation items */}
-            <div className="flex items-center gap-4">
-              <Link
-                to={ROUTES.WISHLIST}
-                className="flex flex-col items-center text-gray-700 hover:text-red-500"
-              >
-                <Heart size={20} />
-                <span className="text-xs mt-1">Yêu thích</span>
-              </Link>
-              <Link
-                to={ROUTES.ACCOUNT}
-                className="flex flex-col items-center text-gray-700 hover:text-red-500"
-              >
-                <User size={20} />
-                <span className="text-xs mt-1">Tài khoản</span>
-              </Link>
+            {/* Right section - Search, Cart, Account */}
+            <div className="flex items-center space-x-4">
+              {/* Search Button */}
+              <button className="p-2 text-gray-700 hover:text-red-600 md:hidden">
+                <Search size={20} />
+              </button>
+
+              {/* Cart Button */}
               <Link
                 to={ROUTES.CART}
-                className="flex flex-col items-center text-gray-700 hover:text-red-500"
+                className="relative p-2 text-gray-700 hover:text-red-600"
               >
-                <div className="relative">
-                  <ShoppingCart size={20} />
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    0
+                <ShoppingCart size={20} />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {itemCount}
                   </span>
-                </div>
-                <span className="text-xs mt-1">Giỏ hàng</span>
+                )}
+              </Link>
+
+              {/* Account Button */}
+              <Link
+                to={ROUTES.LOGIN}
+                className="p-2 text-gray-700 hover:text-red-600"
+              >
+                <User size={20} />
               </Link>
             </div>
           </div>

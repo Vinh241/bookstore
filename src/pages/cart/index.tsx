@@ -1,94 +1,37 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Trash2, Plus, Minus, BadgePercent, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import BookCard from "@/components/BookCard";
 import { ROUTES, getBookDetailUrl } from "@/constants";
-
-// Import demo data - in a real app, this would come from a cart context/redux store
-import { books } from "@/lib/data";
-
-// Sample cart items for demonstration
-const initialCartItems = [
-  {
-    id: books[0].id,
-    title: books[0].title,
-    author: books[0].author,
-    coverImage: books[0].coverImage,
-    price: books[0].price,
-    originalPrice: books[0].originalPrice,
-    discount: books[0].discount,
-    quantity: 1,
-  },
-  {
-    id: books[1].id,
-    title: books[1].title,
-    author: books[1].author,
-    coverImage: books[1].coverImage,
-    price: books[1].price,
-    originalPrice: books[1].originalPrice,
-    discount: books[1].discount,
-    quantity: 2,
-  },
-];
-
-// Get recommended books based on cart items
-const getRecommendedBooks = (cartItems: typeof initialCartItems) => {
-  // In a real app, this would be a more sophisticated recommendation algorithm
-  // For demo, just get books not in cart
-  const cartBookIds = cartItems.map((item) => item.id);
-  return books.filter((book) => !cartBookIds.includes(book.id)).slice(0, 5);
-};
+import { useCart } from "@/contexts/CartContext";
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
-  const [couponCode, setCouponCode] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
+  const {
+    cartItems,
+    isLoading,
+    subtotal,
+    discountAmount,
+    shippingCost,
+    total,
+    couponCode,
+    couponApplied,
+    setCouponCode,
+    applyCoupon,
+    updateQuantity,
+    removeItem,
+  } = useCart();
 
-  // Calculate subtotal
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
-
-  // Calculate discount amount (for demo: 10% if coupon applied)
-  const discountAmount = couponApplied ? subtotal * 0.1 : 0;
-
-  // Fixed shipping cost (free if subtotal > 300,000₫)
-  const shippingCost = subtotal > 300000 ? 0 : 30000;
-
-  // Calculate total
-  const total = subtotal - discountAmount + shippingCost;
-
-  // Update quantity of an item
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-10 text-center">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
+          <div className="h-64 bg-gray-200 rounded mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
     );
-  };
-
-  // Remove an item from cart
-  const removeItem = (id: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
-
-  // Apply coupon code
-  const applyCoupon = () => {
-    // In a real app, this would validate the coupon code against a backend service
-    if (couponCode.toUpperCase() === "DISCOUNT10") {
-      setCouponApplied(true);
-    } else {
-      alert("Mã giảm giá không hợp lệ");
-      setCouponApplied(false);
-    }
-  };
-
-  // Get recommended books
-  const recommendedBooks = getRecommendedBooks(cartItems);
+  }
 
   return (
     <div className="bg-gray-50 py-8">
@@ -131,8 +74,8 @@ const CartPage = () => {
                           <div className="flex items-center">
                             <Link to={getBookDetailUrl(item.id)}>
                               <img
-                                src={item.coverImage}
-                                alt={item.title}
+                                src={item.image_url || "/placeholder-book.jpg"}
+                                alt={item.name}
                                 className="w-16 h-24 object-cover rounded mr-4"
                               />
                             </Link>
@@ -141,7 +84,7 @@ const CartPage = () => {
                                 to={getBookDetailUrl(item.id)}
                                 className="font-medium hover:text-red-500 line-clamp-2"
                               >
-                                {item.title}
+                                {item.name}
                               </Link>
                               <div className="text-sm text-gray-500 mt-1">
                                 {item.author}
@@ -162,9 +105,9 @@ const CartPage = () => {
                           <div className="font-medium">
                             {item.price.toLocaleString()}đ
                           </div>
-                          {item.discount > 0 && (
+                          {item.price < item.original_price && (
                             <div className="text-gray-500 line-through text-xs">
-                              {item.originalPrice.toLocaleString()}đ
+                              {item.original_price.toLocaleString()}đ
                             </div>
                           )}
                         </div>
@@ -221,28 +164,6 @@ const CartPage = () => {
                     <ChevronRight size={16} className="rotate-180 mr-1" />
                     Tiếp tục mua sắm
                   </Link>
-                </div>
-              </div>
-
-              {/* Recommended Products */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-bold mb-4">
-                  Có thể bạn cũng thích
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  {recommendedBooks.map((book) => (
-                    <BookCard
-                      key={book.id}
-                      id={book.id}
-                      title={book.title}
-                      author={book.author}
-                      coverImage={book.coverImage}
-                      price={book.price}
-                      originalPrice={book.originalPrice}
-                      discount={book.discount}
-                      isNew={book.isNew}
-                    />
-                  ))}
                 </div>
               </div>
             </div>

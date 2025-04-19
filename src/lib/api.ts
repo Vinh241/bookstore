@@ -90,3 +90,17 @@ export const fetchCategoryDetails = async (
     return null;
   }
 };
+
+export const getProductsByIds = async (
+  productIds: number[]
+): Promise<Product[]> => {
+  try {
+    const response = await axiosInstance.post("/products/by-ids", {
+      ids: productIds,
+    });
+    return response?.data?.data || [];
+  } catch (error) {
+    console.error("Error fetching products by ids:", error);
+    return [];
+  }
+};

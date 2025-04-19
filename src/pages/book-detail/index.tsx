@@ -6,6 +6,8 @@ import BookCard from "@/components/BookCard";
 import { ROUTES } from "@/constants";
 import { fetchProductDetails, fetchProductReviews } from "@/lib/api";
 import { Product, Review } from "@/types";
+import { toast } from "sonner";
+import { useCart } from "@/contexts/CartContext";
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +19,7 @@ const BookDetailPage = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const loadProductData = async () => {
@@ -49,44 +52,9 @@ const BookDetailPage = () => {
   const incrementQuantity = () => setQuantity((q) => q + 1);
   const decrementQuantity = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
-  const addToCart = () => {
+  const handleAddToCart = () => {
     if (!book) return;
-
-    try {
-      // Get existing cart items from localStorage
-      const existingCartItems = JSON.parse(
-        localStorage.getItem("cart") || "[]"
-      );
-
-      // Check if item already exists in cart
-      const existingItemIndex = existingCartItems.findIndex(
-        (item: any) => item.id === book.id
-      );
-
-      if (existingItemIndex >= 0) {
-        // Update quantity if item exists
-        existingCartItems[existingItemIndex].quantity += quantity;
-      } else {
-        // Add new item if it doesn't exist
-        existingCartItems.push({
-          id: book.id,
-          quantity: quantity,
-        });
-      }
-
-      // Save back to localStorage
-      localStorage.setItem("cart", JSON.stringify(existingCartItems));
-
-      // Show success message
-      toast.success("Thành công", {
-        description: "Đã thêm vào giỏ hàng",
-      });
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      toast.error("Lỗi", {
-        description: "Có lỗi xảy ra khi thêm vào giỏ hàng",
-      });
-    }
+    addToCart(book, quantity);
   };
 
   if (isLoading) {
@@ -270,7 +238,10 @@ const BookDetailPage = () => {
                 <Button className="bg-red-600 hover:bg-red-700 px-8 py-6">
                   Mua ngay
                 </Button>
-                <Button className="bg-orange-500 hover:bg-orange-600 px-8 py-6">
+                <Button
+                  onClick={handleAddToCart}
+                  className="bg-orange-500 hover:bg-orange-600 px-8 py-6"
+                >
                   Thêm vào giỏ hàng
                 </Button>
                 <Button
