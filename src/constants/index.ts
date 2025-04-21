@@ -4,6 +4,8 @@ export const ROUTES = {
   BOOK_DETAIL: "/books",
   CATEGORY: "/category",
   CART: "/cart",
+  CHECKOUT: "/checkout",
+  PAYMENT_RESULT: "/payment-result",
   FLASH_SALE: "/flash-sale",
   NEW_BOOKS: "/new-books",
   BEST_SELLERS: "/best-sellers",

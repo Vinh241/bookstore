@@ -228,9 +228,11 @@ const CartPage = () => {
                 </div>
 
                 {/* Checkout Button */}
-                <Button className="w-full bg-red-600 hover:bg-red-700 py-6">
-                  Tiến hành đặt hàng
-                </Button>
+                <Link to={ROUTES.CHECKOUT}>
+                  <Button className="w-full bg-red-600 hover:bg-red-700 py-6">
+                    Tiến hành đặt hàng
+                  </Button>
+                </Link>
 
                 <div className="mt-4 text-xs text-gray-500 text-center">
                   Bằng cách đặt hàng, bạn đồng ý với Điều khoản sử dụng của

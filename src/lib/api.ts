@@ -104,3 +104,38 @@ export const getProductsByIds = async (
     return [];
   }
 };
+
+// API Functions for Payment and Orders
+export const createMomoPayment = async (paymentData: {
+  amount: number;
+  orderInfo: string;
+  orderData: any;
+}) => {
+  try {
+    const response = await axiosInstance.post("/payments/momo", paymentData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating MoMo payment:", error);
+    throw error;
+  }
+};
+
+export const getPaymentStatus = async (orderId: string | number) => {
+  try {
+    const response = await axiosInstance.get(`/payments/${orderId}/status`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching payment status for order ${orderId}:`, error);
+    throw error;
+  }
+};
+
+export const createOrder = async (orderData: any) => {
+  try {
+    const response = await axiosInstance.post("/orders", orderData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating order:", error);
+    throw error;
+  }
+};

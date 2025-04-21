@@ -4,6 +4,9 @@ import HomePage from "./pages/home";
 import BookDetailPage from "./pages/book-detail";
 import CategoryPage from "./pages/category";
 import CartPage from "./pages/cart";
+import CheckoutPage from "./pages/checkout";
+import CheckoutSuccessPage from "./pages/checkout/success";
+import PaymentResultPage from "./pages/payment/payment-result";
 import AboutUsPage from "./pages/about-us";
 import PolicyPage from "./pages/policy";
 import ContactPage from "./pages/contact";
@@ -30,6 +33,18 @@ const router = createBrowserRouter([
       {
         path: ROUTES.CART,
         element: <CartPage />,
+      },
+      {
+        path: ROUTES.CHECKOUT,
+        element: <CheckoutPage />,
+      },
+      {
+        path: `${ROUTES.CHECKOUT}/success`,
+        element: <CheckoutSuccessPage />,
+      },
+      {
+        path: ROUTES.PAYMENT_RESULT,
+        element: <PaymentResultPage />,
       },
       {
         path: ROUTES.FLASH_SALE,
