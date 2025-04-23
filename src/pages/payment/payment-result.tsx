@@ -35,7 +35,7 @@ const PaymentResultPage = () => {
     const checkPaymentStatus = async () => {
       try {
         // Lấy thông tin trạng thái từ query params
-        const status = searchParams.get("status");
+        // const status = searchParams.get("status");
         const orderId = searchParams.get("orderId");
         const message = searchParams.get("message");
 
@@ -48,46 +48,44 @@ const PaymentResultPage = () => {
         }
 
         // Kiểm tra status từ MoMo trả về
-        if (status === "success") {
-          // MoMo trả về thành công, kiểm tra với backend để đảm bảo
-          const response = await getPaymentStatus(orderId);
+        // if (status === "success") {
+        // MoMo trả về thành công, kiểm tra với backend để đảm bảo
+        const response = await getPaymentStatus(orderId);
 
-          if (response.success && response.data.paymentStatus === "completed") {
-            // Thanh toán thành công
-            setPaymentStatus({
-              status: "success",
-              orderId,
-              message: "Thanh toán thành công!",
-              orderStatus: response.data.orderStatus,
-              paymentStatus: response.data.paymentStatus,
-            });
-
-            // Xóa giỏ hàng vì đã thanh toán thành công
-            clearCart();
-
-            // Xóa thông tin đơn hàng đang xử lý
-            localStorage.removeItem("pendingOrder");
-          } else {
-            // Backend xác nhận thanh toán thất bại hoặc đang xử lý
-            setPaymentStatus({
-              status:
-                response.data.paymentStatus === "pending"
-                  ? "pending"
-                  : "failed",
-              orderId,
-              message: response.message || "Đơn hàng đang được xử lý",
-              orderStatus: response.data.orderStatus,
-              paymentStatus: response.data.paymentStatus,
-            });
-          }
-        } else {
-          // MoMo trả về thất bại
+        if (response.success && response.data.paymentStatus === "completed") {
+          // Thanh toán thành công
           setPaymentStatus({
-            status: "failed",
+            status: "success",
             orderId,
-            message: message || "Thanh toán không thành công",
+            message: "Thanh toán thành công!",
+            orderStatus: response.data.orderStatus,
+            paymentStatus: response.data.paymentStatus,
+          });
+
+          // Xóa giỏ hàng vì đã thanh toán thành công
+          clearCart();
+
+          // Xóa thông tin đơn hàng đang xử lý
+          localStorage.removeItem("pendingOrder");
+        } else {
+          // Backend xác nhận thanh toán thất bại hoặc đang xử lý
+          setPaymentStatus({
+            status:
+              response.data.paymentStatus === "pending" ? "pending" : "failed",
+            orderId,
+            message: response.message || "Đơn hàng đang được xử lý",
+            orderStatus: response.data.orderStatus,
+            paymentStatus: response.data.paymentStatus,
           });
         }
+        // } else {
+        //   // MoMo trả về thất bại
+        //   setPaymentStatus({
+        //     status: "failed",
+        //     orderId,
+        //     message: message || "Thanh toán không thành công",
+        //   });
+        // }
       } catch (error) {
         console.error("Error checking payment status:", error);
         setPaymentStatus({
@@ -98,7 +96,7 @@ const PaymentResultPage = () => {
     };
 
     checkPaymentStatus();
-  }, [searchParams, clearCart]);
+  }, [searchParams]);
 
   return (
     <div className="bg-gray-50 py-12">
