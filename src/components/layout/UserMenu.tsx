@@ -54,7 +54,7 @@ const UserMenu: React.FC = () => {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <Link to={ROUTES.CHECK_ORDER} className="w-full">
+          <Link to={ROUTES.MY_ORDERS} className="w-full">
             Đơn hàng của tôi
           </Link>
         </DropdownMenuItem>

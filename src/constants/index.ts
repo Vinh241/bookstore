@@ -15,6 +15,8 @@ export const ROUTES = {
   ACCOUNT: "/account",
   WISHLIST: "/wishlist",
   CHECK_ORDER: "/check-order",
+  MY_ORDERS: "/my-orders",
+  ORDER_DETAIL: "/orders",
   // Other categories
   SCHOOL_SUPPLIES: "/do-dung-hoc-tap",
   TOYS: "/do-choi",
@@ -37,3 +39,6 @@ export const getBookDetailUrl = (id: number) => `${ROUTES.BOOK_DETAIL}/${id}`;
 // Helper function to create category URL
 export const getCategoryUrl = (categoryId: number) =>
   `${ROUTES.CATEGORY}/${categoryId}`;
+
+// Helper function to create order detail URL
+export const getOrderDetailUrl = (id: number) => `${ROUTES.ORDER_DETAIL}/${id}`;

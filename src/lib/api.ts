@@ -1,4 +1,4 @@
-import { Category, Product } from "@/types";
+import { Category, Product, Order, OrderWithItems } from "@/types";
 import axiosInstance from "./axios";
 
 interface User {
@@ -148,6 +148,29 @@ export const createOrder = async (orderData: any) => {
     return response.data;
   } catch (error) {
     console.error("Error creating order:", error);
+    throw error;
+  }
+};
+
+// Order API functions
+export const fetchUserOrders = async (): Promise<Order[]> => {
+  try {
+    const response = await axiosInstance.get("/orders");
+    return response?.data?.data?.orders || [];
+  } catch (error) {
+    console.error("Error fetching user orders:", error);
+    throw error;
+  }
+};
+
+export const fetchOrderDetails = async (
+  orderId: string | number
+): Promise<OrderWithItems | null> => {
+  try {
+    const response = await axiosInstance.get(`/orders/${orderId}`);
+    return response?.data?.data?.order || null;
+  } catch (error) {
+    console.error(`Error fetching order details for order ${orderId}:`, error);
     throw error;
   }
 };

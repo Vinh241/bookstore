@@ -92,18 +92,19 @@ export type PaymentMethod =
   | "credit_card"
   | "paypal"
   | "bank_transfer"
-  | "cash_on_delivery";
+  | "cash_on_delivery"
+  | "momo";
 
 export interface Order {
   id: number;
   user_id: number;
   status: OrderStatus;
   total_amount: number;
-  shipping_address_id: number;
+  shipping_address?: string;
   payment_method: PaymentMethod;
   payment_status: PaymentStatus;
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface OrderItem {
@@ -112,8 +113,15 @@ export interface OrderItem {
   product_id: number;
   quantity: number;
   unit_price: number;
-  created_at: Date;
-  updated_at: Date;
+  name?: string;
+  slug?: string;
+  isbn?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderWithItems extends Order {
+  items: OrderItem[];
 }
 
 export interface Review {

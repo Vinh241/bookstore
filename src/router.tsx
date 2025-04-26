@@ -12,6 +12,8 @@ import PolicyPage from "./pages/policy";
 import ContactPage from "./pages/contact";
 import LoginPage from "./pages/login";
 import RegisterPage from "./pages/register";
+import MyOrdersPage from "./pages/my-orders";
+import OrderDetailPage from "./pages/orders/[id]";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { ROUTES } from "./constants";
 
@@ -58,6 +60,22 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <PaymentResultPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.MY_ORDERS,
+        element: (
+          <ProtectedRoute>
+            <MyOrdersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: `${ROUTES.ORDER_DETAIL}/:id`,
+        element: (
+          <ProtectedRoute>
+            <OrderDetailPage />
           </ProtectedRoute>
         ),
       },
