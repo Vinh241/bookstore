@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ROUTES } from "@/constants";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { createMomoPayment, createOrder } from "@/lib/api";
 
@@ -28,6 +29,7 @@ interface CheckoutFormData {
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     cartItems,
     subtotal,
@@ -132,6 +134,7 @@ const CheckoutPage = () => {
     try {
       // Prepare order data
       const orderData = {
+        user_id: user?.id,
         customer_name: formData.fullName,
         customer_email: formData.email,
         customer_phone: formData.phone,
