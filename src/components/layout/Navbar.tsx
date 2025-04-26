@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import {
   Search,
   ShoppingCart,
-  User,
   Menu,
   Heart,
   Phone,
@@ -12,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants";
 import { useEffect, useState } from "react";
 import { useCart } from "@/contexts/CartContext";
+import UserMenu from "./UserMenu";
 
 interface Category {
   id: string;
@@ -64,12 +64,7 @@ const Navbar = () => {
             <Link to={ROUTES.CHECK_ORDER} className="hover:text-red-500">
               Kiểm tra đơn hàng
             </Link>
-            <Link to={ROUTES.LOGIN} className="hover:text-red-500">
-              Đăng nhập
-            </Link>
-            <Link to={ROUTES.REGISTER} className="hover:text-red-500">
-              Đăng ký
-            </Link>
+            {/* UserMenu will handle login/register links */}
           </div>
         </div>
       </div>
@@ -115,13 +110,8 @@ const Navbar = () => {
                 )}
               </Link>
 
-              {/* Account Button */}
-              <Link
-                to={ROUTES.LOGIN}
-                className="p-2 text-gray-700 hover:text-red-600"
-              >
-                <User size={20} />
-              </Link>
+              {/* User Menu */}
+              <UserMenu />
             </div>
           </div>
         </div>

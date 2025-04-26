@@ -10,6 +10,9 @@ import PaymentResultPage from "./pages/payment/payment-result";
 import AboutUsPage from "./pages/about-us";
 import PolicyPage from "./pages/policy";
 import ContactPage from "./pages/contact";
+import LoginPage from "./pages/login";
+import RegisterPage from "./pages/register";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { ROUTES } from "./constants";
 
 // Khởi tạo router
@@ -36,15 +39,27 @@ const router = createBrowserRouter([
       },
       {
         path: ROUTES.CHECKOUT,
-        element: <CheckoutPage />,
+        element: (
+          <ProtectedRoute>
+            <CheckoutPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: `${ROUTES.CHECKOUT}/success`,
-        element: <CheckoutSuccessPage />,
+        element: (
+          <ProtectedRoute>
+            <CheckoutSuccessPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: ROUTES.PAYMENT_RESULT,
-        element: <PaymentResultPage />,
+        element: (
+          <ProtectedRoute>
+            <PaymentResultPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: ROUTES.FLASH_SALE,
@@ -69,6 +84,15 @@ const router = createBrowserRouter([
       {
         path: ROUTES.CONTACT,
         element: <ContactPage />,
+      },
+      // Auth routes
+      {
+        path: ROUTES.LOGIN,
+        element: <LoginPage />,
+      },
+      {
+        path: ROUTES.REGISTER,
+        element: <RegisterPage />,
       },
     ],
   },

@@ -1,6 +1,18 @@
 import { Category, Product } from "@/types";
 import axiosInstance from "./axios";
 
+interface User {
+  id: number;
+  email: string;
+  full_name: string;
+  phone_number?: string;
+}
+
+interface AuthResponse {
+  user: User;
+  token: string;
+}
+
 export const fetchCategories = async (): Promise<Category[]> => {
   try {
     const response = await axiosInstance.get("/categories");
@@ -137,5 +149,63 @@ export const createOrder = async (orderData: any) => {
   } catch (error) {
     console.error("Error creating order:", error);
     throw error;
+  }
+};
+
+// Authentication API functions
+export const loginUser = async (
+  email: string,
+  password: string
+): Promise<AuthResponse> => {
+  try {
+    const response = await axiosInstance.post("/auth/login", {
+      email,
+      password,
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
+};
+
+export const registerUser = async (
+  email: string,
+  password: string,
+  full_name: string,
+  phone_number?: string
+): Promise<AuthResponse> => {
+  try {
+    const response = await axiosInstance.post("/auth/register", {
+      email,
+      password,
+      full_name,
+      phone_number,
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error("Registration error:", error);
+    throw error;
+  }
+};
+
+export const getCurrentUser = async (): Promise<User> => {
+  try {
+    const response = await axiosInstance.get("/auth/me");
+    return response.data.data.user;
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    throw error;
+  }
+};
+
+// Set auth token for API requests
+export const setAuthToken = (token: string | null): void => {
+  if (token) {
+    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    localStorage.setItem("token", token);
+  } else {
+    delete axiosInstance.defaults.headers.common["Authorization"];
+    localStorage.removeItem("token");
   }
 };
