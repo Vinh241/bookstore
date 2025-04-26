@@ -70,6 +70,7 @@ export interface Product {
   publisher_name?: string;
   rating?: number;
   review_count?: number;
+  images?: ProductImage[];
 }
 
 export interface ProductImage {

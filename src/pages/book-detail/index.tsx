@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Star, Truck, ShieldCheck, RotateCcw, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BookCard from "@/components/BookCard";
-import { ROUTES } from "@/constants";
+import { ROUTES, BACKEND_URL } from "@/constants";
 import { fetchProductDetails, fetchProductReviews } from "@/lib/api";
 import { Product, Review } from "@/types";
 import { toast } from "sonner";
@@ -55,6 +55,15 @@ const BookDetailPage = () => {
   const handleAddToCart = () => {
     if (!book) return;
     addToCart(book, quantity);
+  };
+
+  // Hàm helper để tạo URL hình ảnh đầy đủ
+  const getFullImageUrl = (url?: string) => {
+    if (!url) return "/placeholder-book.jpg";
+    if (url.startsWith("/")) {
+      return `${BACKEND_URL}${url}`;
+    }
+    return url;
   };
 
   if (isLoading) {
@@ -120,9 +129,20 @@ const BookDetailPage = () => {
             {/* Product Image */}
             <div className="border rounded-lg overflow-hidden">
               <img
-                src={book.image_url || "/placeholder-book.jpg"}
+                src={
+                  book.images && book.images.length > 0
+                    ? getFullImageUrl(
+                        book.images.find((img) => img.is_primary)?.image_url ||
+                          book.images[0].image_url
+                      )
+                    : getFullImageUrl(book.image_url)
+                }
                 alt={book.name}
                 className="w-full h-auto object-cover"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/placeholder-book.jpg";
+                }}
               />
             </div>
 
@@ -367,6 +387,7 @@ const BookDetailPage = () => {
                   coverImage={relatedBook.image_url}
                   price={relatedBook.sale_price || relatedBook.price}
                   originalPrice={relatedBook.price}
+                  images={relatedBook.images}
                 />
               ))}
             </div>

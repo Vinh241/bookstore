@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { getBookDetailUrl } from "@/constants";
+import { getBookDetailUrl, BACKEND_URL } from "@/constants";
 
 import BookPlaceholder from "@/assets/images/books.avif";
 interface BookCardProps {
@@ -10,6 +10,7 @@ interface BookCardProps {
   price: number;
   originalPrice: number;
   author?: string;
+  images?: Array<{ image_url: string; is_primary: boolean }>;
 }
 
 const BookCard = ({
@@ -19,7 +20,34 @@ const BookCard = ({
   coverImage,
   price,
   originalPrice,
+  images,
 }: BookCardProps) => {
+  // Get primary image from images array, or fallback to coverImage
+  const getImageSrc = () => {
+    if (images && images.length > 0) {
+      // Tìm ảnh chính (is_primary = true) hoặc lấy ảnh đầu tiên
+      const imageUrl =
+        images.find((img) => img.is_primary)?.image_url || images[0].image_url;
+
+      // Thêm baseURL nếu đường dẫn là tương đối
+      if (imageUrl && imageUrl.startsWith("/")) {
+        return `${BACKEND_URL}${imageUrl}`;
+      }
+      return imageUrl;
+    }
+    // Fallback to coverImage
+    if (coverImage) {
+      if (coverImage.startsWith("/")) {
+        return `${BACKEND_URL}${coverImage}`;
+      }
+      return coverImage;
+    }
+    // Fallback to placeholder
+    return BookPlaceholder;
+  };
+
+  const imageSrc = getImageSrc();
+
   return (
     <Link
       to={getBookDetailUrl(id)}
@@ -32,19 +60,15 @@ const BookCard = ({
 
       {/* Book cover */}
       <div className="relative pt-[150%]">
-        {coverImage ? (
-          <img
-            src={coverImage}
-            alt={title}
-            className="absolute top-0 left-0 w-full h-full object-cover"
-          />
-        ) : (
-          <img
-            src={BookPlaceholder}
-            alt={title}
-            className="absolute top-0 left-0 w-full h-full object-cover "
-          />
-        )}
+        <img
+          src={imageSrc}
+          alt={title}
+          className="absolute top-0 left-0 w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = BookPlaceholder;
+          }}
+        />
       </div>
 
       {/* Book info */}

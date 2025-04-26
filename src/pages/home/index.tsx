@@ -155,6 +155,7 @@ const HomePage = () => {
                   price={book.sale_price || 0}
                   originalPrice={book.price || 0}
                   // discount={book.discount}
+                  images={book.images}
                 />
               ))
             )}

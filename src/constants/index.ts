@@ -42,3 +42,5 @@ export const getCategoryUrl = (categoryId: number) =>
 
 // Helper function to create order detail URL
 export const getOrderDetailUrl = (id: number) => `${ROUTES.ORDER_DETAIL}/${id}`;
+
+export const BACKEND_URL = "http://localhost:3000";
