@@ -9,6 +9,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { createMomoPayment, createOrder } from "@/lib/api";
+import defaultBookImage from "@/assets/images/books.avif";
 
 type PaymentMethod = "cod" | "momo";
 type ShippingMethod = "standard" | "express";
@@ -562,7 +563,7 @@ const CheckoutPage = () => {
                     <div key={item.id} className="flex">
                       <div className="w-10 h-14 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                         <img
-                          src={item.image_url || "/placeholder-book.jpg"}
+                          src={item.image_url || defaultBookImage}
                           alt={item.name}
                           className="w-full h-full object-cover"
                         />

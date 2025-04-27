@@ -2,8 +2,10 @@ import { Link } from "react-router-dom";
 import { Trash2, Plus, Minus, BadgePercent, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ROUTES, getBookDetailUrl } from "@/constants";
+import { ROUTES, getBookDetailUrl, BACKEND_URL } from "@/constants";
 import { useCart } from "@/contexts/CartContext";
+import { CartItem } from "@/contexts/CartContext";
+import defaultBookImage from "@/assets/images/books.avif";
 
 const CartPage = () => {
   const {
@@ -20,6 +22,33 @@ const CartPage = () => {
     updateQuantity,
     removeItem,
   } = useCart();
+
+  // Hàm helper để lấy URL hình ảnh sản phẩm
+  const getProductImage = (item: CartItem) => {
+    // Nếu sản phẩm có mảng images, ưu tiên dùng ảnh có is_primary = true
+    if (item.images && item.images.length > 0) {
+      const imageUrl =
+        item.images.find((img) => img.is_primary)?.image_url ||
+        item.images[0].image_url;
+
+      // Thêm baseURL nếu đường dẫn là tương đối
+      if (imageUrl && imageUrl.startsWith("/")) {
+        return `${BACKEND_URL}${imageUrl}`;
+      }
+      return imageUrl;
+    }
+
+    // Nếu không có mảng images, dùng image_url
+    if (item.image_url) {
+      if (item.image_url.startsWith("/")) {
+        return `${BACKEND_URL}${item.image_url}`;
+      }
+      return item.image_url;
+    }
+
+    // Trả về ảnh mặc định nếu không có ảnh
+    return defaultBookImage;
+  };
 
   if (isLoading) {
     return (
@@ -74,7 +103,7 @@ const CartPage = () => {
                           <div className="flex items-center">
                             <Link to={getBookDetailUrl(item.id)}>
                               <img
-                                src={item.image_url || "/placeholder-book.jpg"}
+                                src={getProductImage(item) ?? defaultBookImage}
                                 alt={item.name}
                                 className="w-16 h-24 object-cover rounded mr-4"
                               />

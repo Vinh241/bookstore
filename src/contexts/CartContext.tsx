@@ -8,6 +8,7 @@ import {
 import { toast } from "sonner";
 import { getProductsByIds } from "@/lib/api";
 import { Product } from "@/types";
+import defaultBookImage from "@/assets/images/books.avif";
 
 // Định nghĩa cấu trúc của CartItem
 export interface CartItem {
@@ -20,6 +21,7 @@ export interface CartItem {
   quantity: number;
   category_id: string;
   category_name: string;
+  images?: Array<{ image_url: string; is_primary: boolean }>;
 }
 
 // Định nghĩa context type
@@ -108,6 +110,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                   quantity: cartItem.quantity,
                   price: freshProduct.sale_price || freshProduct.price,
                   original_price: freshProduct.price,
+                  images: freshProduct.images,
                 };
               }
               return cartItem;
@@ -168,6 +171,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           quantity: quantity,
           category_id: product.category_id?.toString() || "",
           category_name: product.category_name || "",
+          images: product.images,
         };
         updatedItems = [...cartItems, newItem];
       }
