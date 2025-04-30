@@ -79,7 +79,7 @@ const Navbar = () => {
             </Link>
 
             {/* Search bar */}
-            <div className="relative w-1/3">
+            {/* <div className="relative w-1/3">
               <input
                 type="text"
                 placeholder="Tìm kiếm sản phẩm..."
@@ -88,7 +88,7 @@ const Navbar = () => {
               <Button className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-1.5 h-auto">
                 <Search size={18} />
               </Button>
-            </div>
+            </div> */}
 
             {/* Right section - Search, Cart, Account */}
             <div className="flex items-center space-x-4">

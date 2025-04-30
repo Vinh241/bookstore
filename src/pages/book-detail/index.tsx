@@ -6,8 +6,8 @@ import BookCard from "@/components/BookCard";
 import { ROUTES, BACKEND_URL } from "@/constants";
 import { fetchProductDetails, fetchProductReviews } from "@/lib/api";
 import { Product, Review } from "@/types";
-import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
+import defaultBookImage from "@/assets/images/books.avif";
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -137,12 +137,11 @@ const BookDetailPage = () => {
                       )
                     : getFullImageUrl(book.image_url)
                 }
-                alt={book.name}
-                className="w-full h-auto object-cover"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/placeholder-book.jpg";
+                  e.currentTarget.src = defaultBookImage;
                 }}
+                className="w-full h-auto object-cover"
               />
             </div>
 
