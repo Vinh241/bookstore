@@ -135,7 +135,7 @@ const PaymentResultPage = () => {
                     Trang chủ
                   </Button>
                 </Link>
-                <Link to={`/account/orders`}>
+                <Link to={`/my-orders`}>
                   <Button className="w-full bg-red-600 hover:bg-red-700">
                     Xem đơn hàng
                     <ArrowRight size={18} className="ml-2" />
