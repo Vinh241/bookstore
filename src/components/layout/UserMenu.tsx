@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ROUTES } from "@/constants";
-import { User } from "lucide-react";
+import { User, LayoutDashboard } from "lucide-react";
 
 const UserMenu: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -43,6 +43,20 @@ const UserMenu: React.FC = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {user.is_admin && (
+          <>
+            <DropdownMenuItem>
+              <Link
+                to={ROUTES.ADMIN}
+                className="w-full flex items-center gap-2"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Quản trị hệ thống</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem>
           <Link to={ROUTES.ACCOUNT} className="w-full">
             Tài khoản

@@ -4,6 +4,7 @@ export interface User {
   phone_number?: string;
   password_hash: string;
   full_name: string;
+  is_admin?: boolean;
   created_at: Date;
   updated_at: Date;
 }

@@ -17,6 +17,11 @@ export const ROUTES = {
   CHECK_ORDER: "/check-order",
   MY_ORDERS: "/my-orders",
   ORDER_DETAIL: "/orders",
+  // Admin pages
+  ADMIN: "/admin",
+  ADMIN_PRODUCTS: "/admin/products",
+  ADMIN_ORDERS: "/admin/orders",
+  ADMIN_SALES: "/admin/sales",
   // Other categories
   SCHOOL_SUPPLIES: "/do-dung-hoc-tap",
   TOYS: "/do-choi",

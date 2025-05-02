@@ -6,6 +6,7 @@ interface User {
   email: string;
   full_name: string;
   phone_number?: string;
+  is_admin?: boolean;
 }
 
 interface AuthResponse {
@@ -230,5 +231,69 @@ export const setAuthToken = (token: string | null): void => {
   } else {
     delete axiosInstance.defaults.headers.common["Authorization"];
     localStorage.removeItem("token");
+  }
+};
+
+// Admin API functions
+export const fetchAdminDashboardStats = async () => {
+  try {
+    const response = await axiosInstance.get("/admin/dashboard/stats");
+    return (
+      response?.data?.data || {
+        orderCount: 0,
+        totalRevenue: 0,
+        productCount: 0,
+        lowStockCount: 0,
+      }
+    );
+  } catch (error) {
+    console.error("Error fetching admin dashboard stats:", error);
+    return {
+      orderCount: 0,
+      totalRevenue: 0,
+      productCount: 0,
+      lowStockCount: 0,
+    };
+  }
+};
+
+export const fetchAdminRecentOrders = async (limit = 10) => {
+  try {
+    const response = await axiosInstance.get(
+      `/admin/dashboard/recent-orders?limit=${limit}`
+    );
+    return response?.data?.data?.orders || [];
+  } catch (error) {
+    console.error("Error fetching admin recent orders:", error);
+    return [];
+  }
+};
+
+export const fetchAdminBestsellingProducts = async (limit = 5) => {
+  try {
+    const response = await axiosInstance.get(
+      `/admin/dashboard/bestselling-products?limit=${limit}`
+    );
+    return response?.data?.data?.products || [];
+  } catch (error) {
+    console.error("Error fetching admin bestselling products:", error);
+    return [];
+  }
+};
+
+export const fetchAdminSalesByDate = async (
+  startDate?: string,
+  endDate?: string
+) => {
+  try {
+    let url = "/admin/dashboard/sales-by-date";
+    if (startDate && endDate) {
+      url += `?startDate=${startDate}&endDate=${endDate}`;
+    }
+    const response = await axiosInstance.get(url);
+    return response?.data?.data?.salesByDate || [];
+  } catch (error) {
+    console.error("Error fetching admin sales by date:", error);
+    return [];
   }
 };

@@ -15,6 +15,12 @@ import RegisterPage from "./pages/register";
 import MyOrdersPage from "./pages/my-orders";
 import OrderDetailPage from "./pages/orders/[id]";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import AdminProtectedRoute from "./components/auth/AdminProtectedRoute";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/admin";
+import AdminProducts from "./pages/admin/products";
+import AdminOrders from "./pages/admin/orders";
+import AdminSales from "./pages/admin/sales";
 import { ROUTES } from "./constants";
 
 // Khởi tạo router
@@ -111,6 +117,33 @@ const router = createBrowserRouter([
       {
         path: ROUTES.REGISTER,
         element: <RegisterPage />,
+      },
+    ],
+  },
+  // Admin routes
+  {
+    path: ROUTES.ADMIN,
+    element: (
+      <AdminProtectedRoute>
+        <AdminLayout />
+      </AdminProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <AdminDashboard />,
+      },
+      {
+        path: "products",
+        element: <AdminProducts />,
+      },
+      {
+        path: "orders",
+        element: <AdminOrders />,
+      },
+      {
+        path: "sales",
+        element: <AdminSales />,
       },
     ],
   },
