@@ -248,24 +248,62 @@ export const fetchAdminDashboardStats = async () => {
     );
   } catch (error) {
     console.error("Error fetching admin dashboard stats:", error);
-    return {
-      orderCount: 0,
-      totalRevenue: 0,
-      productCount: 0,
-      lowStockCount: 0,
-    };
+    throw error;
   }
 };
 
 export const fetchAdminRecentOrders = async (limit = 10) => {
   try {
-    const response = await axiosInstance.get(
-      `/admin/dashboard/recent-orders?limit=${limit}`
-    );
+    const response = await axiosInstance.get("/admin/dashboard/recent-orders", {
+      params: { limit },
+    });
     return response?.data?.data?.orders || [];
   } catch (error) {
     console.error("Error fetching admin recent orders:", error);
-    return [];
+    throw error;
+  }
+};
+
+export const fetchAdminOrders = async (params: {
+  status?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+}) => {
+  try {
+    const response = await axiosInstance.get("/admin/orders", {
+      params,
+    });
+    return {
+      orders: response?.data?.data?.orders || [],
+      total: response?.data?.data?.total || 0,
+      totalPages: response?.data?.data?.totalPages || 0,
+    };
+  } catch (error) {
+    console.error("Error fetching admin orders:", error);
+    return { orders: [], total: 0, totalPages: 0 };
+  }
+};
+
+export const updateOrderStatus = async (orderId: number, status: string) => {
+  try {
+    const response = await axiosInstance.patch(`/admin/orders/${orderId}`, {
+      status,
+    });
+    return response?.data?.data || null;
+  } catch (error) {
+    console.error(`Error updating order status:`, error);
+    throw error;
+  }
+};
+
+export const fetchAdminOrderDetails = async (orderId: number) => {
+  try {
+    const response = await axiosInstance.get(`/admin/orders/${orderId}`);
+    return response?.data?.data?.order || null;
+  } catch (error) {
+    console.error(`Error fetching order details:`, error);
+    throw error;
   }
 };
 
