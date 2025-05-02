@@ -335,3 +335,21 @@ export const fetchAdminSalesByDate = async (
     return [];
   }
 };
+
+export const fetchAdminSalesByCategory = async (
+  startDate?: string,
+  endDate?: string,
+  limit: number = 5
+) => {
+  try {
+    let url = `/admin/dashboard/sales-by-category?limit=${limit}`;
+    if (startDate && endDate) {
+      url += `&startDate=${startDate}&endDate=${endDate}`;
+    }
+    const response = await axiosInstance.get(url);
+    return response?.data?.data?.salesByCategory || [];
+  } catch (error) {
+    console.error("Error fetching admin sales by category:", error);
+    return [];
+  }
+};
