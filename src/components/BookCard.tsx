@@ -11,6 +11,7 @@ interface BookCardProps {
   originalPrice: number;
   author?: string;
   images?: Array<{ image_url: string; is_primary: boolean }>;
+  stockQuantity?: number;
 }
 
 const BookCard = ({
@@ -21,6 +22,7 @@ const BookCard = ({
   price,
   originalPrice,
   images,
+  stockQuantity,
 }: BookCardProps) => {
   // Get primary image from images array, or fallback to coverImage
   const getImageSrc = () => {
@@ -47,6 +49,7 @@ const BookCard = ({
   };
 
   const imageSrc = getImageSrc();
+  const isOutOfStock = typeof stockQuantity === "number" && stockQuantity <= 0;
 
   return (
     <Link
@@ -54,16 +57,27 @@ const BookCard = ({
       className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col h-full relative"
     >
       {/* Discount badge */}
-      <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg z-10">
-        -{(((originalPrice - price) / originalPrice) * 100).toFixed(0)}%
-      </div>
+      {!isOutOfStock && (
+        <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg z-10">
+          -{(((originalPrice - price) / originalPrice) * 100).toFixed(0)}%
+        </div>
+      )}
+
+      {/* Out of stock badge */}
+      {isOutOfStock && (
+        <div className="absolute top-0 right-0 bg-gray-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg z-10">
+          Hết hàng
+        </div>
+      )}
 
       {/* Book cover */}
       <div className="relative pt-[150%]">
         <img
           src={imageSrc}
           alt={title}
-          className="absolute top-0 left-0 w-full h-full object-cover"
+          className={`absolute top-0 left-0 w-full h-full object-cover ${
+            isOutOfStock ? "opacity-60" : ""
+          }`}
           onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = BookPlaceholder;

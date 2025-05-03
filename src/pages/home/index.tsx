@@ -151,11 +151,11 @@ const HomePage = () => {
                   id={book.id}
                   title={book.name}
                   author={book.author_name}
-                  // coverImage={book.image}
-                  price={book.sale_price || 0}
-                  originalPrice={book.price || 0}
-                  // discount={book.discount}
+                  coverImage={book.image_url}
+                  price={book.sale_price || book.price}
+                  originalPrice={book.price}
                   images={book.images}
+                  stockQuantity={book.stock_quantity}
                 />
               ))
             )}

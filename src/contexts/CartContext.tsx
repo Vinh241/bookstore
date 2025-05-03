@@ -146,6 +146,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!product) return;
 
     try {
+      // Check if product is in stock
+      if (!product.stock_quantity || product.stock_quantity <= 0) {
+        toast.error("Sản phẩm đã hết hàng");
+        return;
+      }
+
+      // Check if there's enough stock for the requested quantity
+      if (product.stock_quantity < quantity) {
+        toast.error(`Chỉ còn ${product.stock_quantity} sản phẩm trong kho`);
+        return;
+      }
+
       // Calculate the final price
       const productPrice = product.sale_price || product.price;
 
@@ -156,6 +168,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       let updatedItems;
       if (existingItemIndex >= 0) {
+        // Check if the new total quantity exceeds stock
+        const newQuantity = cartItems[existingItemIndex].quantity + quantity;
+        if (newQuantity > product.stock_quantity) {
+          toast.error(
+            `Không thể thêm. Chỉ còn ${product.stock_quantity} sản phẩm trong kho`
+          );
+          return;
+        }
+
         // Update quantity if item exists
         updatedItems = [...cartItems];
         updatedItems[existingItemIndex].quantity += quantity;

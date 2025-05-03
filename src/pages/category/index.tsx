@@ -336,6 +336,8 @@ const CategoryPage = () => {
                           coverImage={book.image_url || ""}
                           price={book.sale_price || book.price}
                           originalPrice={book.price}
+                          images={book.images}
+                          stockQuantity={book.stock_quantity}
                         />
                       ))}
                     </div>

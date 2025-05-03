@@ -226,49 +226,54 @@ const BookDetailPage = () => {
               {/* Quantity Selector */}
               <div className="flex items-center mb-6">
                 <span className="text-gray-500 mr-4">Số lượng:</span>
-                <div className="flex border rounded">
-                  <button
-                    onClick={decrementQuantity}
-                    className="px-3 py-1 border-r hover:bg-gray-100"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min="1"
-                    max={book.stock_quantity}
-                    value={quantity}
-                    onChange={(e) =>
-                      setQuantity(Math.max(1, parseInt(e.target.value) || 1))
-                    }
-                    className="w-12 text-center py-1 focus:outline-none"
-                  />
-                  <button
-                    onClick={incrementQuantity}
-                    className="px-3 py-1 border-l hover:bg-gray-100"
-                  >
-                    +
-                  </button>
-                </div>
+                {book.stock_quantity > 0 ? (
+                  <div className="flex border rounded">
+                    <button
+                      onClick={decrementQuantity}
+                      className="px-3 py-1 border-r hover:bg-gray-100"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      max={book.stock_quantity}
+                      value={quantity}
+                      onChange={(e) =>
+                        setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+                      }
+                      className="w-12 text-center py-1 focus:outline-none"
+                    />
+                    <button
+                      onClick={incrementQuantity}
+                      className="px-3 py-1 border-l hover:bg-gray-100"
+                    >
+                      +
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-red-500 font-medium">Hết hàng</span>
+                )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-4">
-                <Button className="bg-red-600 hover:bg-red-700 px-8 py-6">
-                  Mua ngay
-                </Button>
+              {/* Add to Cart Button */}
+              <div className="flex space-x-4 mb-6">
                 <Button
                   onClick={handleAddToCart}
-                  className="bg-orange-500 hover:bg-orange-600 px-8 py-6"
+                  disabled={book.stock_quantity <= 0}
+                  className={`w-full md:w-auto px-8 ${
+                    book.stock_quantity <= 0
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
                 >
-                  Thêm vào giỏ hàng
+                  {book.stock_quantity > 0 ? "Thêm vào giỏ hàng" : "Hết hàng"}
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-gray-300 hover:bg-gray-100 px-4 py-6"
+                  className="p-2 border-gray-300 hover:bg-gray-50"
                 >
-                  <Heart className="mr-2" size={20} />
-                  Thêm vào yêu thích
+                  <Heart size={20} className="text-red-500" />
                 </Button>
               </div>
 
@@ -387,6 +392,7 @@ const BookDetailPage = () => {
                   price={relatedBook.sale_price || relatedBook.price}
                   originalPrice={relatedBook.price}
                   images={relatedBook.images}
+                  stockQuantity={relatedBook.stock_quantity}
                 />
               ))}
             </div>
