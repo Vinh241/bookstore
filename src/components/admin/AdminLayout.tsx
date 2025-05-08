@@ -8,9 +8,7 @@ const AdminLayout: React.FC = () => {
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-md">
         <div className="p-4 border-b">
-          <h2 className="text-xl font-semibold text-gray-800">
-            Admin Dashboard
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-800">Quản trị viên</h2>
         </div>
         <nav className="mt-4">
           <ul>
@@ -49,6 +47,18 @@ const AdminLayout: React.FC = () => {
                 }
               >
                 Quản lý đơn hàng
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to={ROUTES.ADMIN_USERS}
+                className={({ isActive }) =>
+                  `block px-4 py-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 ${
+                    isActive ? "bg-blue-50 text-blue-600 font-medium" : ""
+                  }`
+                }
+              >
+                Quản lý người dùng
               </NavLink>
             </li>
             <li>

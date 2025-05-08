@@ -353,3 +353,88 @@ export const fetchAdminSalesByCategory = async (
     return [];
   }
 };
+
+// Admin User Management
+export const fetchAdminUsers = async (params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) => {
+  try {
+    const { page = 1, limit = 10, search = "" } = params;
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
+    if (search) queryParams.append("search", search);
+
+    const response = await axiosInstance.get(
+      `/users?${queryParams.toString()}`
+    );
+
+    return {
+      users: response?.data?.data?.users || [],
+      total: response?.data?.data?.total || 0,
+      totalPages: response?.data?.data?.totalPages || 0,
+      currentPage: response?.data?.data?.currentPage || 1,
+    };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw error;
+  }
+};
+
+export const fetchAdminUserDetails = async (userId: number) => {
+  try {
+    const response = await axiosInstance.get(`/users/${userId}`);
+    return response?.data?.data?.user || null;
+  } catch (error) {
+    console.error(`Error fetching user details for user ${userId}:`, error);
+    throw error;
+  }
+};
+
+export const createAdminUser = async (userData: {
+  email: string;
+  password: string;
+  full_name: string;
+  phone_number?: string;
+  is_admin?: boolean;
+}) => {
+  try {
+    const response = await axiosInstance.post("/users", userData);
+    return response?.data?.data?.user || null;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
+};
+
+export const updateAdminUser = async (
+  userId: number,
+  userData: {
+    email?: string;
+    password?: string;
+    full_name?: string;
+    phone_number?: string;
+    is_admin?: boolean;
+  }
+) => {
+  try {
+    const response = await axiosInstance.put(`/users/${userId}`, userData);
+    return response?.data?.data?.user || null;
+  } catch (error) {
+    console.error(`Error updating user ${userId}:`, error);
+    throw error;
+  }
+};
+
+export const deleteAdminUser = async (userId: number) => {
+  try {
+    const response = await axiosInstance.delete(`/users/${userId}`);
+    return response?.data || { status: "error" };
+  } catch (error) {
+    console.error(`Error deleting user ${userId}:`, error);
+    throw error;
+  }
+};

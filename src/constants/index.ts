@@ -22,6 +22,7 @@ export const ROUTES = {
   ADMIN_PRODUCTS: "/admin/products",
   ADMIN_ORDERS: "/admin/orders",
   ADMIN_SALES: "/admin/sales",
+  ADMIN_USERS: "/admin/users",
   // Other categories
   SCHOOL_SUPPLIES: "/do-dung-hoc-tap",
   TOYS: "/do-choi",

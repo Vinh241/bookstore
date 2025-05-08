@@ -21,6 +21,7 @@ import AdminDashboard from "./pages/admin";
 import AdminProducts from "./pages/admin/products";
 import AdminOrders from "./pages/admin/orders";
 import AdminSales from "./pages/admin/sales";
+import AdminUsers from "./pages/admin/users";
 import { ROUTES } from "./constants";
 
 // Khởi tạo router
@@ -140,6 +141,10 @@ const router = createBrowserRouter([
       {
         path: "orders",
         element: <AdminOrders />,
+      },
+      {
+        path: "users",
+        element: <AdminUsers />,
       },
       {
         path: "sales",

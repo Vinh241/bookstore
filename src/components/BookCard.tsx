@@ -91,11 +91,11 @@ const BookCard = ({
         <p className="text-gray-500 text-xs mb-2">{author}</p>
         <div className="mt-auto">
           <div className="font-bold text-red-600">
-            {price.toLocaleString()}đ
+            {Math.floor(price).toLocaleString()}đ
           </div>
 
           <div className="text-gray-500 text-xs line-through">
-            {originalPrice.toLocaleString()}đ
+            {Math.floor(originalPrice).toLocaleString()}đ
           </div>
         </div>
       </div>
