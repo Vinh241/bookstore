@@ -307,7 +307,7 @@ export const fetchAdminOrderDetails = async (orderId: number) => {
   }
 };
 
-export const fetchAdminBestsellingProducts = async (limit = 5) => {
+export const fetchAdminBestsellingProducts = async (limit: number = 5) => {
   try {
     const response = await axiosInstance.get(
       `/admin/dashboard/bestselling-products?limit=${limit}`
@@ -315,6 +315,18 @@ export const fetchAdminBestsellingProducts = async (limit = 5) => {
     return response?.data?.data?.products || [];
   } catch (error) {
     console.error("Error fetching admin bestselling products:", error);
+    return [];
+  }
+};
+
+export const fetchAdminSlowSellingProducts = async (limit: number = 5) => {
+  try {
+    const response = await axiosInstance.get(
+      `/admin/dashboard/slow-selling-products?limit=${limit}`
+    );
+    return response?.data?.data?.products || [];
+  } catch (error) {
+    console.error("Error fetching admin slow-selling products:", error);
     return [];
   }
 };

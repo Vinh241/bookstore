@@ -4,8 +4,16 @@ import {
   fetchAdminSalesByCategory,
   fetchAdminBestsellingProducts,
 } from "@/lib/api";
-import { format } from "date-fns";
+import { format, subMonths } from "date-fns";
 import { vi } from "date-fns/locale";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -78,8 +86,8 @@ const CustomTooltip = ({
 };
 
 const AdminSales: React.FC = () => {
-  const [dateRange, setDateRange] = useState("month");
-  const [salesData, setSalesData] = useState<SalesData[]>([]);
+  const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
+  const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [topCategories, setTopCategories] = useState<CategorySales[]>([]);
   const [bestsellingProducts, setBestsellingProducts] = useState<
@@ -124,23 +132,15 @@ const AdminSales: React.FC = () => {
     const fetchData = async () => {
       setIsLoading(true);
 
-      // Calculate date range based on selection
-      const endDate = new Date();
-      let startDate = new Date();
-
-      if (dateRange === "week") {
-        startDate.setDate(endDate.getDate() - 7);
-      } else if (dateRange === "month") {
-        startDate.setMonth(endDate.getMonth() - 1);
-      } else if (dateRange === "year") {
-        startDate.setFullYear(endDate.getFullYear() - 1);
-      }
-
-      const formatDateStr = (date: Date) => {
-        return date.toISOString().split("T")[0];
-      };
-
       try {
+        // Calculate date range based on custom dates
+        const endDate = customEndDate || new Date();
+        const startDate = customStartDate || subMonths(endDate, 1); // Default to last month if no dates selected
+
+        const formatDateStr = (date: Date) => {
+          return date.toISOString().split("T")[0];
+        };
+
         // Fetch sales data by date
         const salesByDate = await fetchAdminSalesByDate(
           formatDateStr(startDate),
@@ -155,8 +155,6 @@ const AdminSales: React.FC = () => {
 
         // Fetch bestselling products
         const bestProducts = await fetchAdminBestsellingProducts(3);
-
-        setSalesData(salesByDate);
 
         // Transform sales data for chart
         const transformedData = salesByDate.map((item: SalesData) => ({
@@ -187,14 +185,11 @@ const AdminSales: React.FC = () => {
           // Calculate previous period for comparison
           const previousEndDate = new Date(startDate);
           const previousStartDate = new Date(startDate);
-
-          if (dateRange === "week") {
-            previousStartDate.setDate(previousStartDate.getDate() - 7);
-          } else if (dateRange === "month") {
-            previousStartDate.setMonth(previousStartDate.getMonth() - 1);
-          } else if (dateRange === "year") {
-            previousStartDate.setFullYear(previousStartDate.getFullYear() - 1);
-          }
+          const periodDays = Math.ceil(
+            (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          previousStartDate.setDate(previousStartDate.getDate() - periodDays);
+          previousEndDate.setDate(previousEndDate.getDate() - periodDays);
 
           const previousSalesData = await fetchAdminSalesByDate(
             formatDateStr(previousStartDate),
@@ -219,15 +214,15 @@ const AdminSales: React.FC = () => {
             increase: percentIncrease,
           });
         }
-      } catch (error) {
-        console.error("Error fetching sales data:", error);
+      } catch (err) {
+        console.error("Error fetching sales data:", err);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [dateRange]);
+  }, [customStartDate, customEndDate]);
 
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString("vi-VN");
@@ -235,10 +230,9 @@ const AdminSales: React.FC = () => {
 
   const formatChartDate = (dateStr: string) => {
     try {
-      // Input date is in format 'YYYY-MM-DD'
       const date = new Date(dateStr);
       return format(date, "dd/MM", { locale: vi });
-    } catch (error) {
+    } catch {
       return dateStr;
     }
   };
@@ -291,37 +285,76 @@ const AdminSales: React.FC = () => {
             <h3 className="text-lg font-medium text-gray-900">
               Doanh thu theo thời gian
             </h3>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setDateRange("week")}
-                className={`px-3 py-1 rounded-md text-sm font-medium ${
-                  dateRange === "week"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Tuần
-              </button>
-              <button
-                onClick={() => setDateRange("month")}
-                className={`px-3 py-1 rounded-md text-sm font-medium ${
-                  dateRange === "month"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Tháng
-              </button>
-              <button
-                onClick={() => setDateRange("year")}
-                className={`px-3 py-1 rounded-md text-sm font-medium ${
-                  dateRange === "year"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Năm
-              </button>
+            <div className="flex items-center space-x-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={`w-[140px] justify-start text-left font-normal ${
+                      !customStartDate && "text-muted-foreground"
+                    }`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {customStartDate ? (
+                      format(customStartDate, "dd/MM/yyyy", { locale: vi })
+                    ) : (
+                      <span>Từ ngày</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={customStartDate || undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        setCustomStartDate(date);
+                      }
+                    }}
+                    initialFocus
+                    locale={vi}
+                    disabled={(date) =>
+                      date > new Date() ||
+                      (customEndDate ? date > customEndDate : false)
+                    }
+                  />
+                </PopoverContent>
+              </Popover>
+              <span className="text-gray-500">-</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={`w-[140px] justify-start text-left font-normal ${
+                      !customEndDate && "text-muted-foreground"
+                    }`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {customEndDate ? (
+                      format(customEndDate, "dd/MM/yyyy", { locale: vi })
+                    ) : (
+                      <span>Đến ngày</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={customEndDate || undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        setCustomEndDate(date);
+                      }
+                    }}
+                    initialFocus
+                    locale={vi}
+                    disabled={(date) =>
+                      date > new Date() ||
+                      (customStartDate ? date < customStartDate : false)
+                    }
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 

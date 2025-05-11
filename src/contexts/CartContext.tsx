@@ -8,7 +8,6 @@ import {
 import { toast } from "sonner";
 import { getProductsByIds } from "@/lib/api";
 import { Product } from "@/types";
-import defaultBookImage from "@/assets/images/books.avif";
 
 // Định nghĩa cấu trúc của CartItem
 export interface CartItem {

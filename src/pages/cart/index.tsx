@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Trash2, Plus, Minus, BadgePercent, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +6,11 @@ import { ROUTES, getBookDetailUrl, BACKEND_URL } from "@/constants";
 import { useCart } from "@/contexts/CartContext";
 import { CartItem } from "@/contexts/CartContext";
 import defaultBookImage from "@/assets/images/books.avif";
+import { getProductsByIds } from "@/lib/api";
+import { toast } from "sonner";
 
 const CartPage = () => {
+  const navigate = useNavigate();
   const {
     cartItems,
     isLoading,
@@ -48,6 +51,64 @@ const CartPage = () => {
 
     // Trả về ảnh mặc định nếu không có ảnh
     return defaultBookImage;
+  };
+
+  // Hàm kiểm tra hàng tồn kho trước khi checkout
+  const validateCartBeforeCheckout = async () => {
+    if (cartItems.length === 0) {
+      toast.error("Giỏ hàng của bạn đang trống");
+      return false;
+    }
+
+    try {
+      // Lấy thông tin sản phẩm mới nhất từ API
+      const productIds = cartItems.map((item) => item.id);
+      const latestProducts = await getProductsByIds(productIds);
+
+      // Kiểm tra tồn kho cho mỗi sản phẩm
+      let hasStockError = false;
+      const errorMessages: string[] = [];
+
+      cartItems.forEach((cartItem) => {
+        const product = latestProducts.find((p) => p.id === cartItem.id);
+
+        if (!product) {
+          errorMessages.push(`Sản phẩm "${cartItem.name}" không còn tồn tại`);
+          hasStockError = true;
+          return;
+        }
+
+        if (!product.stock_quantity || product.stock_quantity <= 0) {
+          errorMessages.push(`Sản phẩm "${product.name}" đã hết hàng`);
+          hasStockError = true;
+        } else if (cartItem.quantity > product.stock_quantity) {
+          errorMessages.push(
+            `Sản phẩm "${product.name}" chỉ còn ${product.stock_quantity} trong kho (bạn đang đặt ${cartItem.quantity})`
+          );
+          hasStockError = true;
+        }
+      });
+
+      if (hasStockError) {
+        // Hiển thị tất cả các lỗi
+        errorMessages.forEach((msg) => toast.error(msg));
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Lỗi khi kiểm tra tồn kho:", error);
+      toast.error("Không thể kiểm tra tồn kho. Vui lòng thử lại sau.");
+      return false;
+    }
+  };
+
+  // Xử lý sự kiện khi nhấn nút tiến hành đặt hàng
+  const handleProceedToCheckout = async () => {
+    const isValid = await validateCartBeforeCheckout();
+    if (isValid) {
+      navigate(ROUTES.CHECKOUT);
+    }
   };
 
   if (isLoading) {
@@ -257,11 +318,12 @@ const CartPage = () => {
                 </div>
 
                 {/* Checkout Button */}
-                <Link to={ROUTES.CHECKOUT}>
-                  <Button className="w-full bg-red-600 hover:bg-red-700 py-6">
-                    Tiến hành đặt hàng
-                  </Button>
-                </Link>
+                <Button
+                  onClick={handleProceedToCheckout}
+                  className="w-full bg-red-600 hover:bg-red-700 py-6"
+                >
+                  Tiến hành đặt hàng
+                </Button>
 
                 <div className="mt-4 text-xs text-gray-500 text-center">
                   Bằng cách đặt hàng, bạn đồng ý với Điều khoản sử dụng của

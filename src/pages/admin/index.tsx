@@ -3,6 +3,7 @@ import {
   fetchAdminDashboardStats,
   fetchAdminRecentOrders,
   fetchAdminBestsellingProducts,
+  fetchAdminSlowSellingProducts,
 } from "@/lib/api";
 import { BACKEND_URL } from "@/constants";
 import defaultBookImage from "@/assets/images/books.avif";
@@ -27,6 +28,7 @@ interface Product {
   name: string;
   price: number;
   quantity_sold: number;
+  stock_quantity?: number;
   image_url: string | null;
   images?: { image_url: string; is_primary: boolean }[];
 }
@@ -40,6 +42,7 @@ const AdminDashboard: React.FC = () => {
   });
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [bestsellingProducts, setBestsellingProducts] = useState<Product[]>([]);
+  const [slowSellingProducts, setSlowSellingProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,15 +51,18 @@ const AdminDashboard: React.FC = () => {
         setLoading(true);
 
         // Fetch all data in parallel
-        const [statsData, ordersData, productsData] = await Promise.all([
-          fetchAdminDashboardStats(),
-          fetchAdminRecentOrders(3), // Limit to 3 orders for display
-          fetchAdminBestsellingProducts(3), // Limit to 3 products for display
-        ]);
+        const [statsData, ordersData, bestProductsData, slowProductsData] =
+          await Promise.all([
+            fetchAdminDashboardStats(),
+            fetchAdminRecentOrders(3), // Limit to 3 orders for display
+            fetchAdminBestsellingProducts(3), // Limit to 3 products for display
+            fetchAdminSlowSellingProducts(3), // Limit to 3 products for display
+          ]);
 
         setStats(statsData);
         setRecentOrders(ordersData);
-        setBestsellingProducts(productsData);
+        setBestsellingProducts(bestProductsData);
+        setSlowSellingProducts(slowProductsData);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -262,6 +268,52 @@ const AdminDashboard: React.FC = () => {
                         </h4>
                         <p className="text-sm text-gray-500">
                           Đã bán: {product.quantity_sold} cuốn
+                        </p>
+                      </div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {formatCurrency(product.price)}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-sm text-gray-500 py-4">
+                    Không có sản phẩm nào
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Sản phẩm bán chậm
+              </h3>
+              <div className="space-y-4">
+                {slowSellingProducts.length > 0 ? (
+                  slowSellingProducts.map((product) => (
+                    <div key={product.id} className="flex items-center">
+                      <div className="flex-shrink-0 h-12 w-12 bg-gray-200 rounded">
+                        <img
+                          src={getProductImage(product)}
+                          alt={product.name}
+                          className="h-12 w-12 rounded object-cover"
+                        />
+                      </div>
+                      <div className="ml-4 flex-1">
+                        <h4 className="text-sm font-medium text-gray-900">
+                          {product.name}
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          Còn lại:{" "}
+                          <span
+                            className={
+                              product.stock_quantity &&
+                              product.stock_quantity < 10
+                                ? "text-red-600 font-medium"
+                                : ""
+                            }
+                          >
+                            {product.stock_quantity} cuốn
+                          </span>
                         </p>
                       </div>
                       <div className="text-sm font-medium text-gray-900">
