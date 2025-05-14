@@ -86,7 +86,7 @@ const CheckoutSuccessPage = () => {
                 <Printer size={16} className="mr-2" />
                 In đơn hàng
               </Button>
-              <Link to={ROUTES.CHECK_ORDER}>
+              <Link to={ROUTES.MY_ORDERS}>
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   Kiểm tra đơn hàng
                 </Button>

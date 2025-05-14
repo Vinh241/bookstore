@@ -1,13 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  Search,
-  ShoppingCart,
-  Menu,
-  Heart,
-  Phone,
-  ChevronDown,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, ShoppingCart, Menu, Phone, ChevronDown } from "lucide-react";
 import { ROUTES } from "@/constants";
 import { useEffect, useState } from "react";
 import { useCart } from "@/contexts/CartContext";
@@ -23,8 +15,6 @@ interface Category {
 const Navbar = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [showCategories, setShowCategories] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isFixed, setIsFixed] = useState(false);
 
   const { itemCount } = useCart();
 
@@ -59,12 +49,6 @@ const Navbar = () => {
               <Phone size={14} />
               <span>Hotline: 1900 63 64 67</span>
             </div>
-          </div>
-          <div className="flex gap-4">
-            <Link to={ROUTES.CHECK_ORDER} className="hover:text-red-500">
-              Kiểm tra đơn hàng
-            </Link>
-            {/* UserMenu will handle login/register links */}
           </div>
         </div>
       </div>

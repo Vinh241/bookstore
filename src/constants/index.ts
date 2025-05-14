@@ -14,7 +14,6 @@ export const ROUTES = {
   REGISTER: "/register",
   ACCOUNT: "/account",
   WISHLIST: "/wishlist",
-  CHECK_ORDER: "/check-order",
   MY_ORDERS: "/my-orders",
   ORDER_DETAIL: "/orders",
   // Admin pages
