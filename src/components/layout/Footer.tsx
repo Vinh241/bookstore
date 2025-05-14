@@ -134,12 +134,12 @@ const Footer = () => {
               <li className="flex items-center gap-2">
                 <MapPin size={18} className="text-red-500" />
                 <span className="text-gray-600">
-                  60-62 Lê Lợi, Q.1, TP. HCM
+                  Số 298 Đ. Cầu Diễn, Minh Khai, Bắc Từ Liêm, Hà Nội
                 </span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone size={18} className="text-red-500" />
-                <span className="text-gray-600">1900 63 64 67</span>
+                <span className="text-gray-600">1900 00 000</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={18} className="text-red-500" />

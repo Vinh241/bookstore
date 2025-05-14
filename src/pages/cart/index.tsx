@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Trash2, Plus, Minus, BadgePercent, ChevronRight } from "lucide-react";
+import { Trash2, Plus, Minus, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ROUTES, getBookDetailUrl, BACKEND_URL } from "@/constants";
 import { useCart } from "@/contexts/CartContext";
 import { CartItem } from "@/contexts/CartContext";
@@ -291,29 +290,6 @@ const CartPage = () => {
                     <span className="text-red-600">
                       {total.toLocaleString()}đ
                     </span>
-                  </div>
-                </div>
-
-                {/* Coupon Code */}
-                <div className="mb-6">
-                  <div className="flex items-center">
-                    <Input
-                      type="text"
-                      placeholder="Nhập mã giảm giá"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      className="rounded-r-none"
-                    />
-                    <Button
-                      onClick={applyCoupon}
-                      className="rounded-l-none bg-blue-600 hover:bg-blue-700"
-                    >
-                      Áp dụng
-                    </Button>
-                  </div>
-                  <div className="text-xs text-gray-500 mt-2 flex items-center">
-                    <BadgePercent size={14} className="mr-1" />
-                    Thử mã "DISCOUNT10" để được giảm 10%
                   </div>
                 </div>
 

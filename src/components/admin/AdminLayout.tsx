@@ -22,7 +22,7 @@ const AdminLayout: React.FC = () => {
                   }`
                 }
               >
-                Tổng quan
+                Thống kê
               </NavLink>
             </li>
             <li>
@@ -59,18 +59,6 @@ const AdminLayout: React.FC = () => {
                 }
               >
                 Quản lý người dùng
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to={ROUTES.ADMIN_SALES}
-                className={({ isActive }) =>
-                  `block px-4 py-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 ${
-                    isActive ? "bg-blue-50 text-blue-600 font-medium" : ""
-                  }`
-                }
-              >
-                Báo cáo doanh số
               </NavLink>
             </li>
             <li>

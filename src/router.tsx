@@ -17,10 +17,9 @@ import OrderDetailPage from "./pages/orders/[id]";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminProtectedRoute from "./components/auth/AdminProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
-import AdminDashboard from "./pages/admin";
+import AdminStatistics from "./pages/admin/statistics";
 import AdminProducts from "./pages/admin/products";
 import AdminOrders from "./pages/admin/orders";
-import AdminSales from "./pages/admin/sales";
 import AdminUsers from "./pages/admin/users";
 import { ROUTES } from "./constants";
 
@@ -132,7 +131,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <AdminDashboard />,
+        element: <AdminStatistics />,
       },
       {
         path: "products",
@@ -147,8 +146,8 @@ const router = createBrowserRouter([
         element: <AdminUsers />,
       },
       {
-        path: "sales",
-        element: <AdminSales />,
+        path: "statistics",
+        element: <AdminStatistics />,
       },
     ],
   },
