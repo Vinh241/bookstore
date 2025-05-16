@@ -450,3 +450,41 @@ export const deleteAdminUser = async (userId: number) => {
     throw error;
   }
 };
+
+// Review API functions
+export const createProductReview = async (
+  productId: number | string,
+  rating: number,
+  comment?: string
+): Promise<any> => {
+  try {
+    const response = await axiosInstance.post(
+      `/products/${productId}/reviews`,
+      {
+        rating,
+        comment,
+      }
+    );
+    return response?.data?.data || null;
+  } catch (error) {
+    console.error(`Error creating review for product ${productId}:`, error);
+    throw error;
+  }
+};
+
+export const getUserProductReview = async (
+  productId: number | string
+): Promise<any> => {
+  try {
+    const response = await axiosInstance.get(
+      `/products/${productId}/user-review`
+    );
+    return response?.data?.data || { review: null, has_reviewed: false };
+  } catch (error) {
+    console.error(
+      `Error fetching user review for product ${productId}:`,
+      error
+    );
+    return { review: null, has_reviewed: false };
+  }
+};

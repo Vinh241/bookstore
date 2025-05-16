@@ -4,10 +4,18 @@ import { Star, Truck, ShieldCheck, RotateCcw, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BookCard from "@/components/BookCard";
 import { ROUTES, BACKEND_URL } from "@/constants";
-import { fetchProductDetails, fetchProductReviews } from "@/lib/api";
+import {
+  fetchProductDetails,
+  fetchProductReviews,
+  createProductReview,
+  getUserProductReview,
+} from "@/lib/api";
 import { Product, Review } from "@/types";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import defaultBookImage from "@/assets/images/books.avif";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +27,12 @@ const BookDetailPage = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
+  const [selectedRating, setSelectedRating] = useState<number>(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
   const { addToCart } = useCart();
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const loadProductData = async () => {
@@ -38,6 +51,11 @@ const BookDetailPage = () => {
         setReviews(reviewsData.reviews || []);
         setAverageRating(reviewsData.average_rating || 0);
         setReviewCount(reviewsData.review_count || 0);
+
+        // Fetch user's review if logged in
+        if (isAuthenticated) {
+          loadUserReview();
+        }
       } catch (err) {
         setError("Không thể tải thông tin sách");
         console.error(err);
@@ -47,7 +65,28 @@ const BookDetailPage = () => {
     };
 
     loadProductData();
-  }, [id]);
+  }, [id, isAuthenticated]);
+
+  // Load user's review
+  const loadUserReview = async () => {
+    if (!id || !isAuthenticated) return;
+
+    try {
+      const userReviewData = await getUserProductReview(id);
+
+      if (userReviewData.review) {
+        setHasReviewed(true);
+
+        // Set form values from existing review
+        setSelectedRating(userReviewData.review.rating);
+        setReviewComment(userReviewData.review.comment || "");
+      } else {
+        setHasReviewed(false);
+      }
+    } catch (err) {
+      console.error("Error loading user review:", err);
+    }
+  };
 
   const incrementQuantity = () => setQuantity((q) => q + 1);
   const decrementQuantity = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
@@ -57,6 +96,61 @@ const BookDetailPage = () => {
     addToCart(book, quantity);
   };
 
+  // Submit review
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!id || !isAuthenticated) {
+      toast.error("Bạn cần đăng nhập để đánh giá");
+      return;
+    }
+
+    // Validate form
+    if (selectedRating < 1 || selectedRating > 5) {
+      toast.error("Vui lòng chọn số sao đánh giá (1-5)");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await createProductReview(
+        id,
+        selectedRating,
+        reviewComment
+      );
+
+      // Update reviews data
+      setReviews((prevReviews) => {
+        // If this is an update, remove the old review
+        const filteredReviews = hasReviewed
+          ? prevReviews.filter((r) => !(user && r.user_id === user.id))
+          : prevReviews;
+
+        // Add the new review at the top
+        return [result.review, ...filteredReviews];
+      });
+
+      // Update average rating and review count
+      setAverageRating(result.average_rating);
+      setReviewCount(result.review_count);
+
+      // Mark as reviewed
+      setHasReviewed(true);
+
+      toast.success(
+        hasReviewed
+          ? "Đánh giá đã được cập nhật thành công"
+          : "Cảm ơn bạn đã đánh giá sản phẩm"
+      );
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      toast.error("Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại sau.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Hàm helper để tạo URL hình ảnh đầy đủ
   const getFullImageUrl = (url?: string) => {
     if (!url) return "/placeholder-book.jpg";
@@ -64,6 +158,11 @@ const BookDetailPage = () => {
       return `${BACKEND_URL}${url}`;
     }
     return url;
+  };
+
+  // Hàm xử lý khi người dùng chọn số sao để đánh giá
+  const handleRatingClick = (rating: number) => {
+    setSelectedRating(rating);
   };
 
   if (isLoading) {
@@ -310,42 +409,128 @@ const BookDetailPage = () => {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <h2 className="text-xl font-bold mb-4">Đánh giá từ khách hàng</h2>
 
-          <div className="flex items-center mb-6">
-            <div className="mr-4">
-              <span className="text-4xl font-bold">
-                {averageRating.toFixed(1)}
-              </span>
-              <span className="text-gray-500">/5</span>
+          <div className="flex flex-col md:flex-row md:items-start gap-8 mb-8">
+            {/* Rating Summary */}
+            <div className="flex items-center md:w-1/3">
+              <div className="mr-4">
+                <span className="text-4xl font-bold">
+                  {Number(averageRating).toFixed(1)}
+                </span>
+                <span className="text-gray-500">/5</span>
+              </div>
+              <div>
+                <div className="flex mb-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={24}
+                      className={
+                        i < Math.floor(averageRating)
+                          ? "text-yellow-400 fill-yellow-400"
+                          : "text-gray-300"
+                      }
+                    />
+                  ))}
+                </div>
+                <div className="text-sm text-gray-500">
+                  {reviewCount} đánh giá
+                </div>
+              </div>
             </div>
-            <div>
-              <div className="flex mb-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={24}
-                    className={
-                      i < Math.floor(averageRating)
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
-                    }
-                  />
-                ))}
-              </div>
-              <div className="text-sm text-gray-500">
-                {reviewCount} đánh giá
-              </div>
+
+            {/* Review Form */}
+            <div className="md:w-2/3 border rounded-lg p-4">
+              {isAuthenticated ? (
+                <form onSubmit={handleSubmitReview} className="space-y-4">
+                  <h3 className="text-lg font-medium mb-2">
+                    {hasReviewed
+                      ? "Cập nhật đánh giá của bạn"
+                      : "Gửi đánh giá của bạn"}
+                  </h3>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Đánh giá của bạn
+                    </label>
+                    <div className="flex space-x-1 mt-1">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <Star
+                          key={rating}
+                          size={30}
+                          onClick={() => handleRatingClick(rating)}
+                          className={`cursor-pointer ${
+                            rating <= selectedRating
+                              ? "text-yellow-400 fill-yellow-400"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <input type="hidden" name="rating" value={selectedRating} />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="comment"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Nhận xét
+                    </label>
+                    <Textarea
+                      id="comment"
+                      placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+                      className="resize-none"
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full md:w-auto"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting
+                      ? "Đang gửi..."
+                      : hasReviewed
+                      ? "Cập nhật đánh giá"
+                      : "Gửi đánh giá"}
+                  </Button>
+                </form>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="mb-4">Bạn cần đăng nhập để đánh giá sản phẩm</p>
+                  <Link
+                    to={`${ROUTES.LOGIN}?redirect=${encodeURIComponent(
+                      window.location.pathname
+                    )}`}
+                    className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                  >
+                    Đăng nhập
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Review List */}
           {reviews.length > 0 ? (
             <div className="space-y-6">
+              <h3 className="font-medium text-lg border-b pb-2">
+                Tất cả đánh giá ({reviewCount})
+              </h3>
               {reviews.map((review) => (
                 <div key={review.id} className="border-b pb-4">
                   <div className="flex items-center mb-2">
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
-                      {review.user_id}
+                      {review.user_name
+                        ? review.user_name.charAt(0).toUpperCase()
+                        : "U"}
                     </div>
                     <div>
+                      <div className="font-medium">
+                        {review.user_name || `Người dùng ${review.user_id}`}
+                      </div>
                       <div className="flex mb-1">
                         {[...Array(5)].map((_, i) => (
                           <Star
@@ -371,8 +556,9 @@ const BookDetailPage = () => {
               ))}
             </div>
           ) : (
-            <div className="text-gray-500 text-center py-8">
-              Chưa có đánh giá nào cho sản phẩm này
+            <div className="text-gray-500 text-center py-8 border-t mt-4">
+              Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh
+              giá!
             </div>
           )}
         </div>

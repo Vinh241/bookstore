@@ -134,6 +134,7 @@ export interface Review {
   comment?: string;
   created_at: Date;
   updated_at: Date;
+  user_name?: string;
 }
 
 export interface CartItem {
