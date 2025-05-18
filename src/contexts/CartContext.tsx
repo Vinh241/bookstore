@@ -29,8 +29,7 @@ interface CartContextType {
   isLoading: boolean;
   subtotal: number;
   discountAmount: number;
-  shippingCost: number;
-  total: number;
+  cartTotal: number;
   itemCount: number;
   couponCode: string;
   couponApplied: boolean;
@@ -48,8 +47,7 @@ export const CartContext = createContext<CartContextType>({
   isLoading: true,
   subtotal: 0,
   discountAmount: 0,
-  shippingCost: 0,
-  total: 0,
+  cartTotal: 0,
   itemCount: 0,
   couponCode: "",
   couponApplied: false,
@@ -74,8 +72,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     0
   );
   const discountAmount = couponApplied ? subtotal * 0.1 : 0;
-  const shippingCost = subtotal > 300000 ? 0 : 30000;
-  const total = subtotal - discountAmount + shippingCost;
+  // Không tính phí vận chuyển trong giỏ hàng, chỉ tính trong checkout
+  const cartTotal = subtotal - discountAmount;
   const itemCount = cartItems.reduce((count, item) => count + item.quantity, 0);
 
   // Load cart from localStorage khi component mount
@@ -256,8 +254,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         subtotal,
         discountAmount,
-        shippingCost,
-        total,
+        cartTotal,
         itemCount,
         couponCode,
         couponApplied,

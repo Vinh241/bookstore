@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Star, Truck, ShieldCheck, RotateCcw, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import BookCard from "@/components/BookCard";
 import { ROUTES, BACKEND_URL } from "@/constants";
 import {
   fetchProductDetails,
@@ -21,7 +20,6 @@ const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
   const [book, setBook] = useState<Product | null>(null);
-  const [relatedBooks, setRelatedBooks] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -275,12 +273,12 @@ const BookDetailPage = () => {
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
                 <div className="flex items-center mb-2">
                   <span className="text-3xl font-bold text-red-600 mr-3">
-                    {finalPrice.toLocaleString()}đ
+                    {Math.floor(finalPrice).toLocaleString()}đ
                   </span>
                   {discount > 0 && (
                     <>
                       <span className="text-gray-500 line-through mr-2">
-                        {book.price.toLocaleString()}đ
+                        {Math.floor(book.price).toLocaleString()}đ
                       </span>
                       <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
                         -{discount}%
@@ -562,28 +560,6 @@ const BookDetailPage = () => {
             </div>
           )}
         </div>
-
-        {/* Related Products */}
-        {relatedBooks.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4">Sản phẩm liên quan</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {relatedBooks.map((relatedBook) => (
-                <BookCard
-                  key={relatedBook.id}
-                  id={relatedBook.id}
-                  title={relatedBook.name}
-                  author={relatedBook.author_name}
-                  coverImage={relatedBook.image_url}
-                  price={relatedBook.sale_price || relatedBook.price}
-                  originalPrice={relatedBook.price}
-                  images={relatedBook.images}
-                  stockQuantity={relatedBook.stock_quantity}
-                />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

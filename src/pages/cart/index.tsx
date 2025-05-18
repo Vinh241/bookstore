@@ -15,12 +15,8 @@ const CartPage = () => {
     isLoading,
     subtotal,
     discountAmount,
-    shippingCost,
-    total,
-    couponCode,
+    cartTotal,
     couponApplied,
-    setCouponCode,
-    applyCoupon,
     updateQuantity,
     removeItem,
   } = useCart();
@@ -269,15 +265,6 @@ const CartPage = () => {
                     <span>{subtotal.toLocaleString()}đ</span>
                   </div>
 
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Phí vận chuyển</span>
-                    {shippingCost > 0 ? (
-                      <span>{shippingCost.toLocaleString()}đ</span>
-                    ) : (
-                      <span className="text-green-600">Miễn phí</span>
-                    )}
-                  </div>
-
                   {couponApplied && (
                     <div className="flex justify-between text-red-500">
                       <span>Giảm giá (10%)</span>
@@ -288,8 +275,12 @@ const CartPage = () => {
                   <div className="border-t pt-3 font-bold text-lg flex justify-between">
                     <span>Tổng cộng</span>
                     <span className="text-red-600">
-                      {total.toLocaleString()}đ
+                      {cartTotal.toLocaleString()}đ
                     </span>
+                  </div>
+
+                  <div className="text-xs text-gray-500 text-center italic">
+                    Phí vận chuyển sẽ được tính ở bước thanh toán
                   </div>
                 </div>
 
@@ -310,13 +301,7 @@ const CartPage = () => {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className="mb-4">
-              <img
-                src="/images/empty-cart.svg"
-                alt="Empty Cart"
-                className="w-32 h-32 mx-auto"
-              />
-            </div>
+            <div className="mb-4">Không có sản phẩm trong giỏ hàng</div>
             <h2 className="text-xl font-medium mb-2">
               Giỏ hàng của bạn đang trống
             </h2>

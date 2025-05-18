@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -24,10 +23,16 @@ import { formatCurrency } from "@/lib/utils";
 import { fetchOrderDetails } from "@/lib/api";
 import { OrderWithItems } from "@/types";
 
+// Mở rộng kiểu OrderWithItems để bao gồm các trường shipping_method và shipping_cost
+interface ExtendedOrderWithItems extends OrderWithItems {
+  shipping_method?: string;
+  shipping_cost?: number;
+}
+
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated } = useAuth();
-  const [order, setOrder] = useState<OrderWithItems | null>(null);
+  const [order, setOrder] = useState<ExtendedOrderWithItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -150,6 +155,18 @@ export default function OrderDetailPage() {
       </div>
     );
   }
+
+  // Tính tổng tiền sản phẩm (không bao gồm phí vận chuyển)
+  const subtotal = order.items.reduce(
+    (sum, item) => sum + item.unit_price * item.quantity,
+    0
+  );
+
+  // Tính phí vận chuyển (là hiệu của tổng đơn hàng và tổng tiền sản phẩm)
+  const shippingCost =
+    order.shipping_cost !== undefined
+      ? order.shipping_cost
+      : order.total_amount - subtotal;
 
   return (
     <div className="container mx-auto py-10">
@@ -296,7 +313,9 @@ export default function OrderDetailPage() {
                 )}{" "}
                 đ
               </p>
-              <p className="text-sm text-gray-500">Phí vận chuyển: 0 đ</p>
+              <p className="text-sm text-gray-500">
+                Phí vận chuyển: {formatCurrency(shippingCost)} đ
+              </p>
             </div>
             <p className="font-bold text-lg">
               Tổng thanh toán: {formatCurrency(order.total_amount)} đ

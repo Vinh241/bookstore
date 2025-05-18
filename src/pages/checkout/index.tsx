@@ -35,8 +35,7 @@ const CheckoutPage = () => {
     cartItems,
     subtotal,
     discountAmount,
-    shippingCost,
-    total,
+    cartTotal,
     couponApplied,
     clearCart,
   } = useCart();
@@ -56,6 +55,17 @@ const CheckoutPage = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Tính phí vận chuyển dựa trên phương thức được chọn
+  const shippingCost =
+    formData.shippingMethod === "express"
+      ? 50000
+      : subtotal > 300000
+      ? 0
+      : 30000;
+
+  // Tính tổng đơn hàng bao gồm phí vận chuyển
+  const total = cartTotal + shippingCost;
 
   if (cartItems.length === 0) {
     return (
@@ -149,6 +159,7 @@ const CheckoutPage = () => {
         })),
         total_amount: total,
         shipping_method: formData.shippingMethod,
+        shipping_cost: shippingCost,
         payment_method: formData.paymentMethod,
       };
 
@@ -190,12 +201,25 @@ const CheckoutPage = () => {
           toast.error(response.message || "Đã có lỗi xảy ra khi đặt hàng");
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error submitting order:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại."
-      );
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.";
+
+      // Sử dụng cách tiếp cận an toàn với TypeScript
+      let responseMessage = errorMessage;
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const errorResponse = (
+          error as { response?: { data?: { message?: string } } }
+        ).response;
+        if (errorResponse?.data?.message) {
+          responseMessage = errorResponse.data.message;
+        }
+      }
+
+      toast.error(responseMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -591,6 +615,13 @@ const CheckoutPage = () => {
                   <span>{subtotal.toLocaleString()}đ</span>
                 </div>
 
+                {couponApplied && (
+                  <div className="flex justify-between text-red-500">
+                    <span>Giảm giá (10%)</span>
+                    <span>-{discountAmount.toLocaleString()}đ</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between">
                   <span className="text-gray-600">Phí vận chuyển</span>
                   {shippingCost > 0 ? (
@@ -599,13 +630,6 @@ const CheckoutPage = () => {
                     <span className="text-green-600">Miễn phí</span>
                   )}
                 </div>
-
-                {couponApplied && (
-                  <div className="flex justify-between text-red-500">
-                    <span>Giảm giá (10%)</span>
-                    <span>-{discountAmount.toLocaleString()}đ</span>
-                  </div>
-                )}
 
                 <div className="border-t pt-3 font-bold text-lg flex justify-between">
                   <span>Tổng cộng</span>

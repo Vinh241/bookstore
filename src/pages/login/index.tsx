@@ -51,7 +51,7 @@ const LoginPage: React.FC = () => {
         {(error || formError) && (
           <Alert variant="destructive">
             <ExclamationTriangleIcon className="h-4 w-4" />
-            <AlertDescription>{formError || error}</AlertDescription>
+            <AlertDescription>Sai tên đăng nhập hoặc mật khẩu</AlertDescription>
           </Alert>
         )}
 
