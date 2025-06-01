@@ -222,13 +222,6 @@ const ContactPage = () => {
               </li>
             </ul>
           </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold mb-4">Bản đồ</h2>
-            <div className="aspect-video bg-gray-200 flex items-center justify-center">
-              <p className="text-gray-600">Nhúng bản đồ Google Maps tại đây</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
