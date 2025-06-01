@@ -78,7 +78,7 @@ const ContactPage = () => {
           </div>
           <h2 className="text-xl font-semibold mb-2">Địa chỉ</h2>
           <p className="text-gray-600">
-            291 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh
+            Số 298 Đ. Cầu Diễn, Minh Khai, Bắc Từ Liêm, Hà Nội
           </p>
         </div>
       </div>

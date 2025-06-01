@@ -158,7 +158,7 @@ const CheckoutPage = () => {
           name: item.name,
         })),
         total_amount: total,
-        shipping_method: formData.shippingMethod,
+        // shipping_method: formData.shippingMethod,
         shipping_cost: shippingCost,
         payment_method: formData.paymentMethod,
       };
@@ -531,32 +531,6 @@ const CheckoutPage = () => {
                         </div>
                       </div>
                     </div>
-                    {formData.paymentMethod === "momo" && (
-                      <div className="mt-2 p-3 bg-pink-50 rounded-md text-sm">
-                        <p className="text-center mb-3">
-                          Quét mã QR bên dưới để thanh toán qua MoMo
-                        </p>
-                        <div className="flex justify-center">
-                          <div className="p-2 bg-white rounded-md inline-block">
-                            <img
-                              src="/images/momo-qr.png"
-                              alt="MoMo QR Code"
-                              className="h-48 w-48"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.onerror = null; // Prevent infinite loop
-                                target.src =
-                                  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2FlMjA3MCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSIgZmlsbD0id2hpdGUiPk1vTW8gUVI8L3RleHQ+PC9zdmc+";
-                              }}
-                            />
-                          </div>
-                        </div>
-                        <p className="text-center mt-3 text-xs text-gray-500">
-                          Sau khi thanh toán thành công, đơn hàng của bạn sẽ
-                          được xử lý trong vòng 24 giờ
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

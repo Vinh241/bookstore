@@ -442,7 +442,7 @@ const AdminUsers: React.FC = () => {
 
       {/* Edit User Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Chỉnh sửa người dùng</DialogTitle>
           </DialogHeader>

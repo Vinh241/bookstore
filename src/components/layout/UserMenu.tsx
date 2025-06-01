@@ -57,16 +57,7 @@ const UserMenu: React.FC = () => {
             <DropdownMenuSeparator />
           </>
         )}
-        <DropdownMenuItem>
-          <Link to={ROUTES.ACCOUNT} className="w-full">
-            Tài khoản
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Link to={ROUTES.WISHLIST} className="w-full">
-            Sản phẩm yêu thích
-          </Link>
-        </DropdownMenuItem>
+
         <DropdownMenuItem>
           <Link to={ROUTES.MY_ORDERS} className="w-full">
             Đơn hàng của tôi
