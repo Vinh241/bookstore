@@ -133,6 +133,20 @@ export const createMomoPayment = async (paymentData: {
   }
 };
 
+export const createVnpayPayment = async (paymentData: {
+  amount: number;
+  orderInfo: string;
+  orderData: any;
+}) => {
+  try {
+    const response = await axiosInstance.post("/payments/vnpay", paymentData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating VNPay payment:", error);
+    throw error;
+  }
+};
+
 export const getPaymentStatus = async (orderId: string | number) => {
   try {
     const response = await axiosInstance.get(`/payments/${orderId}/status`);

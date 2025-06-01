@@ -8,10 +8,10 @@ import { ROUTES } from "@/constants";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { createMomoPayment, createOrder } from "@/lib/api";
+import { createMomoPayment, createVnpayPayment, createOrder } from "@/lib/api";
 import defaultBookImage from "@/assets/images/books.avif";
 
-type PaymentMethod = "cod" | "momo";
+type PaymentMethod = "cod" | "momo" | "vnpay";
 type ShippingMethod = "standard" | "express";
 
 interface CheckoutFormData {
@@ -185,6 +185,29 @@ const CheckoutPage = () => {
           window.location.href = response.data.payUrl;
         } else {
           toast.error(response.message || "Không thể tạo thanh toán MoMo");
+        }
+      } else if (formData.paymentMethod === "vnpay") {
+        // Gọi API thanh toán VNPay
+        const response = await createVnpayPayment({
+          amount: total,
+          orderInfo: `Thanh toan don hang`,
+          orderData: orderData,
+        });
+
+        if (response.success) {
+          // Lưu thông tin đơn hàng vào localStorage để có thể truy xuất sau khi thanh toán
+          localStorage.setItem(
+            "pendingOrder",
+            JSON.stringify({
+              orderId: response.data.orderId,
+              orderData: orderData,
+            })
+          );
+
+          // Chuyển hướng người dùng đến trang thanh toán VNPay
+          window.location.href = response.data.payUrl;
+        } else {
+          toast.error(response.message || "Không thể tạo thanh toán VNPay");
         }
       } else {
         // Thanh toán COD - gửi đơn hàng đến API
@@ -529,6 +552,31 @@ const CheckoutPage = () => {
                         <div className="font-medium">
                           Thanh toán qua Ví MoMo
                         </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`p-4 border rounded-md cursor-pointer ${
+                      formData.paymentMethod === "vnpay"
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-200"
+                    }`}
+                    onClick={() => handlePaymentMethodChange("vnpay")}
+                  >
+                    <div className="flex items-center">
+                      <div className="h-4 w-4 rounded-full border-2 flex items-center justify-center mr-2">
+                        {formData.paymentMethod === "vnpay" && (
+                          <div className="h-2 w-2 rounded-full bg-red-500"></div>
+                        )}
+                      </div>
+                      <div className="flex items-center">
+                        <img
+                          src="/images/vnpay-logo.svg"
+                          alt="VNPay"
+                          className="h-6 w-6 mr-2"
+                        />
+                        <div className="font-medium">Thanh toán qua VNPay</div>
                       </div>
                     </div>
                   </div>

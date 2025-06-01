@@ -645,6 +645,8 @@ const AdminOrders: React.FC = () => {
                         ? "Thanh toán khi nhận hàng (COD)"
                         : orderDetail.payment_method === "momo"
                         ? "Ví MoMo"
+                        : orderDetail.payment_method === "vnpay"
+                        ? "VNPay"
                         : orderDetail.payment_method}
                     </p>
                   </div>

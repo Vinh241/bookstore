@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import {
   CheckCircle,
   XCircle,
@@ -22,22 +22,39 @@ interface PaymentStatusData {
 
 const PaymentResultPage = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { clearCart } = useCart();
 
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatusData>({
     status: "loading",
-    orderId: searchParams.get("orderId") || undefined,
+    orderId:
+      searchParams.get("orderId") ||
+      searchParams.get("vnp_TxnRef") ||
+      undefined,
     message: searchParams.get("message") || undefined,
   });
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
       try {
-        // Lấy thông tin trạng thái từ query params
-        // const status = searchParams.get("status");
-        const orderId = searchParams.get("orderId");
-        const message = searchParams.get("message");
+        // Xác định payment gateway dựa trên query parameters
+        const isVNPay = searchParams.has("vnp_TxnRef");
+        const isMoMo = searchParams.has("orderId");
+
+        let orderId: string | null = null;
+
+        if (isVNPay) {
+          // Xử lý VNPay
+          orderId = searchParams.get("vnp_TxnRef");
+        } else if (isMoMo) {
+          // Xử lý MoMo (logic cũ)
+          orderId = searchParams.get("orderId");
+        } else {
+          setPaymentStatus({
+            status: "failed",
+            message: "Không tìm thấy thông tin thanh toán hợp lệ",
+          });
+          return;
+        }
 
         if (!orderId) {
           setPaymentStatus({
@@ -47,9 +64,7 @@ const PaymentResultPage = () => {
           return;
         }
 
-        // Kiểm tra status từ MoMo trả về
-        // if (status === "success") {
-        // MoMo trả về thành công, kiểm tra với backend để đảm bảo
+        // Kiểm tra với backend để đảm bảo tính chính xác
         const response = await getPaymentStatus(orderId);
 
         if (response.success && response.data.paymentStatus === "completed") {
@@ -57,7 +72,9 @@ const PaymentResultPage = () => {
           setPaymentStatus({
             status: "success",
             orderId,
-            message: "Thanh toán thành công!",
+            message: isVNPay
+              ? "Thanh toán VNPay thành công!"
+              : "Thanh toán MoMo thành công!",
             orderStatus: response.data.orderStatus,
             paymentStatus: response.data.paymentStatus,
           });
@@ -69,23 +86,27 @@ const PaymentResultPage = () => {
           localStorage.removeItem("pendingOrder");
         } else {
           // Backend xác nhận thanh toán thất bại hoặc đang xử lý
+          const status =
+            response.data.paymentStatus === "pending" ? "pending" : "failed";
+          let message = response.message || "Đơn hàng đang được xử lý";
+
+          if (status === "failed") {
+            if (isVNPay) {
+              const vnpResponseCode = searchParams.get("vnp_ResponseCode");
+              message = `Thanh toán VNPay thất bại (Mã lỗi: ${vnpResponseCode})`;
+            } else {
+              message = "Thanh toán MoMo không thành công";
+            }
+          }
+
           setPaymentStatus({
-            status:
-              response.data.paymentStatus === "pending" ? "pending" : "failed",
+            status,
             orderId,
-            message: response.message || "Đơn hàng đang được xử lý",
+            message,
             orderStatus: response.data.orderStatus,
             paymentStatus: response.data.paymentStatus,
           });
         }
-        // } else {
-        //   // MoMo trả về thất bại
-        //   setPaymentStatus({
-        //     status: "failed",
-        //     orderId,
-        //     message: message || "Thanh toán không thành công",
-        //   });
-        // }
       } catch (error) {
         console.error("Error checking payment status:", error);
         setPaymentStatus({

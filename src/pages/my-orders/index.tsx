@@ -72,6 +72,7 @@ export default function MyOrdersPage() {
       bank_transfer: "Chuyển khoản",
       cash_on_delivery: "Thanh toán khi nhận hàng",
       momo: "Ví MoMo",
+      vnpay: "VNPay",
     };
     return methodMap[method] || method;
   };
